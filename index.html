@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Torque Taste">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <title>Torque Coffee — Find Your Flavor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a1a1a;
+      --text: #f0ece4;
+      --text-muted: rgba(240, 236, 228, 0.4);
+      --axis-line: rgba(240, 236, 228, 0.1);
+      --card-bg: rgba(240, 236, 228, 0.05);
+      --card-border: rgba(240, 236, 228, 0.08);
+      --accent: #c8a96e;
+      --puck: #f0ece4;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Loading overlay */
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      z-index: 200;
+      gap: 16px;
+    }
+    #loading.hidden { display: none; }
+    .loading-wordmark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .loading-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .loading-dots span {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+    .loading-error {
+      font-size: 13px;
+      color: #c87a6e;
+      text-align: center;
+      padding: 0 32px;
+      line-height: 1.6;
+    }
+
+    /* App shell */
+    #app {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      transition: background 500ms ease;
+    }
+
+    /* Header */
+    header {
+      flex: 0 0 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wordmark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Compass section */
+    #compass-section {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 16px;
+    }
+
+    #compass {
+      position: relative;
+      /* Square: limited by viewport width minus padding, viewport height minus header+results+controls */
+      width: min(calc(100vw - 32px), calc(100vh - 210px), 480px);
+      aspect-ratio: 1;
+      cursor: crosshair;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Crosshair axis lines */
+    #compass::before, #compass::after {
+      content: '';
+      position: absolute;
+      background: var(--axis-line);
+      pointer-events: none;
+    }
+    #compass::before { /* horizontal */
+      width: 100%; height: 1px;
+      top: 50%; left: 0;
+      transform: translateY(-50%);
+    }
+    #compass::after { /* vertical */
+      width: 1px; height: 100%;
+      left: 50%; top: 0;
+      transform: translateX(-50%);
+    }
+
+    /* Axis labels */
+    .axis-label {
+      position: absolute;
+      font-size: 8px;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .axis-top    { top: 6px; left: 50%; transform: translateX(-50%); }
+    .axis-bottom { bottom: 6px; left: 50%; transform: translateX(-50%); }
+    .axis-left   { left: 6px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+    .axis-right  { right: 6px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+    /* Feeling pair tap targets */
+    .fp {
+      position: absolute;
+      width: 46%;
+      height: 46%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .fp.tr { top: 0; right: 0; }
+    .fp.tl { top: 0; left: 0; }
+    .fp.bl { bottom: 0; left: 0; }
+    .fp.br { bottom: 0; right: 0; }
+
+    .fp-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(12px, 2.8vw, 16px);
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0.35;
+      text-align: center;
+      line-height: 1.25;
+      pointer-events: none;
+      transition: opacity 250ms ease;
+    }
+    .fp.active .fp-label,
+    .fp:active .fp-label { opacity: 0.85; }
+
+    /* Puck */
+    #puck {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--puck);
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 1.5px rgba(255,255,255,0.2), 0 4px 24px rgba(0,0,0,0.55);
+      z-index: 10;
+      cursor: grab;
+      transition: box-shadow 150ms ease;
+    }
+    #puck.dragging {
+      cursor: grabbing;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.25), 0 8px 32px rgba(0,0,0,0.65);
+      transform: translate(-50%, -50%) scale(1.12);
+    }
+    #puck.snapping {
+      transition:
+        left 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        top 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 150ms ease;
+    }
+
+    /* Results section */
+    #results {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 10px 16px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Hint shown before first interaction */
+    #hint {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hint-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* Postcards grid */
+    #postcards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+    }
+    #postcards.hidden { display: none; }
+
+    .postcard {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .postcard-img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      background: rgba(255,255,255,0.04);
+      flex-shrink: 0;
+    }
+    .postcard-img-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
+      flex-shrink: 0;
+    }
+    .postcard-body {
+      padding: 8px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .postcard-aside {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+    .postcard-match {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+    }
+    .postcard-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(13px, 3vw, 16px);
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--text);
+    }
+    .postcard-feeling {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .postcard-notes {
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--text-muted);
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .postcard-btn {
+      display: block;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-align: center;
+      transition: background 120ms ease;
+      flex-shrink: 0;
+    }
+    .postcard-btn:active { background: rgba(255,255,255,0.14); }
+
+    /* Controls bar */
+    #controls {
+      flex: 0 0 auto;
+      padding: 8px 16px 14px;
+      display: flex;
+      justify-content: center;
+    }
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .toggle-wrap span {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .toggle {
+      position: relative;
+      width: 32px;
+      height: 18px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 200ms ease;
+      flex-shrink: 0;
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px;
+      left: 2px;
+      transition: left 200ms ease;
+    }
+    .toggle:checked { background: var(--accent); }
+    .toggle:checked::after { left: 16px; }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading">
+  <span class="loading-wordmark">Torque Coffee</span>
+  <div class="loading-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <span class="wordmark">Torque Coffee</span>
+  </header>
+
+  <div id="compass-section">
+    <div id="compass">
+      <span class="axis-label axis-top">Lively</span>
+      <span class="axis-label axis-bottom">Syrupy</span>
+      <span class="axis-label axis-left">Classic</span>
+      <span class="axis-label axis-right">Modern</span>
+
+      <div class="fp tl" onclick="snapToQuadrant(-50,50)">
+        <span class="fp-label">Crisp &amp;<br>Clean</span>
+      </div>
+      <div class="fp tr" onclick="snapToQuadrant(50,50)">
+        <span class="fp-label">Bright &amp;<br>Fruity</span>
+      </div>
+      <div class="fp bl" onclick="snapToQuadrant(-50,-50)">
+        <span class="fp-label">Friendly &amp;<br>Round</span>
+      </div>
+      <div class="fp br" onclick="snapToQuadrant(50,-50)">
+        <span class="fp-label">Deep &amp;<br>Complex</span>
+      </div>
+
+      <div id="puck"></div>
+    </div>
+  </div>
+
+  <div id="results">
+    <div id="hint">
+      <p class="hint-text">Drag the puck toward your vibe<br>or tap a feeling to jump there</p>
+    </div>
+    <div id="postcards" class="hidden"></div>
+  </div>
+
+  <div id="controls">
+    <label class="toggle-wrap">
+      <input type="checkbox" id="decaf-toggle" class="toggle" onchange="renderMatches()">
+      <span>Decaf only</span>
+    </label>
+  </div>
+</div>
+
+<script>
+  const MAX_DIST = Math.sqrt(200 * 200 + 200 * 200) // ~282.8
+
+  // Background tints per quadrant — dark, low-saturation, felt not seen
+  const BG = {
+    tr: '#1f1a0d', // warm amber
+    tl: '#0d1a1a', // cool teal
+    bl: '#1c160d', // warm earth
+    br: '#130e1f', // deep indigo
+  }
+
+  // Accent colours for match % label
+  const ACCENT = {
+    tr: '#c8a96e',
+    tl: '#6eb8b8',
+    bl: '#b8956e',
+    br: '#9a6eb8',
+  }
+
+  let coffees = []
+  let puckX = 0
+  let puckY = 0
+  let isDragging = false
+  let hasInteracted = false
+  let rafId = null
+
+  const appEl       = document.getElementById('app')
+  const compassEl   = document.getElementById('compass')
+  const puckEl      = document.getElementById('puck')
+  const hintEl      = document.getElementById('hint')
+  const postcardsEl = document.getElementById('postcards')
+  const loadingEl   = document.getElementById('loading')
+  const decafToggle = document.getElementById('decaf-toggle')
+
+  // ── Data loading ──────────────────────────────────────────────────────────
+
+  async function loadCoffees() {
+    try {
+      const res = await fetch('/api/get-coffees')
+      if (!res.ok) throw new Error(`API returned ${res.status}`)
+      coffees = await res.json()
+      loadingEl.classList.add('hidden')
+      renderPuck()
+    } catch (err) {
+      loadingEl.innerHTML = `<div class="loading-error">Couldn't load coffees.<br>${err.message}</div>`
+    }
+  }
+
+  // ── Compass rendering ─────────────────────────────────────────────────────
+
+  function getQuadrant(x, y) {
+    if (x >= 0 && y >= 0) return 'tr'
+    if (x < 0  && y >= 0) return 'tl'
+    if (x < 0  && y < 0)  return 'bl'
+    return 'br'
+  }
+
+  function quadrantName(q) {
+    return { tr: 'Bright & Fruity', tl: 'Crisp & Clean', bl: 'Friendly & Round', br: 'Deep & Complex' }[q]
+  }
+
+  function renderPuck() {
+    puckEl.style.left = `${(puckX + 100) / 2}%`
+    puckEl.style.top  = `${(100 - puckY) / 2}%`
+
+    const q = getQuadrant(puckX, puckY)
+    appEl.style.background = BG[q]
+
+    document.querySelectorAll('.fp').forEach(el => el.classList.remove('active'))
+    document.querySelector(`.fp.${q}`).classList.add('active')
+  }
+
+  // ── Matching engine ───────────────────────────────────────────────────────
+
+  function findMatches() {
+    const decafOnly = decafToggle.checked
+    const pool = coffees.filter(c =>
+      decafOnly ? c.name.toLowerCase().includes('decaf') : true
+    )
+
+    return pool
+      .map(c => {
+        const dist = Math.sqrt((puckX - c.quadrant_x) ** 2 + (puckY - c.quadrant_y) ** 2)
+        const match = Math.round(100 - (dist / MAX_DIST * 100))
+        return { ...c, dist, match }
+      })
+      .sort((a, b) => {
+        if (a.dist !== b.dist) return a.dist - b.dist
+        // Tie-break: newest product first
+        return new Date(b.created_at) - new Date(a.created_at)
+      })
+      .slice(0, 2)
+  }
+
+  function renderMatches() {
+    if (!hasInteracted) return
+
+    const matches = findMatches()
+    const q = getQuadrant(puckX, puckY)
+    const accent = ACCENT[q]
+    const puckQName = quadrantName(q)
+
+    if (!matches.length) {
+      postcardsEl.innerHTML = `<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;"><p style="font-size:13px;color:var(--text-muted);text-align:center;font-style:italic;">No coffees found for this zone.</p></div>`
+      return
+    }
+
+    postcardsEl.innerHTML = matches.map(c => {
+      const notes = c.tasting_notes
+        ? c.tasting_notes.split(',').map(n => n.trim()).join(' · ')
+        : ''
+      const img = c.image_url
+        ? `<img class="postcard-img" src="${c.image_url}" alt="" loading="lazy">`
+        : `<div class="postcard-img-placeholder"></div>`
+
+      // Show "closest vibe" note when the best match isn't in the puck's current zone
+      const isOffZone = c.feeling_pair && c.feeling_pair !== puckQName
+      const aside = isOffZone
+        ? `<div class="postcard-aside">Closest vibe in stock</div>`
+        : ''
+
+      return `
+        <div class="postcard">
+          ${img}
+          <div class="postcard-body">
+            ${aside}
+            <div class="postcard-match" style="color:${accent}">${c.match}% match</div>
+            <div class="postcard-name">${c.name}</div>
+            ${c.feeling_pair ? `<div class="postcard-feeling">${c.feeling_pair}</div>` : ''}
+            ${notes ? `<div class="postcard-notes" title="${notes}">${notes}</div>` : ''}
+            <a class="postcard-btn" href="${c.product_url}" target="_blank" rel="noopener noreferrer">Get This Coffee →</a>
+          </div>
+        </div>
+      `
+    }).join('')
+  }
+
+  function scheduleRender() {
+    if (rafId) cancelAnimationFrame(rafId)
+    rafId = requestAnimationFrame(() => {
+      renderPuck()
+      renderMatches()
+      rafId = null
+    })
+  }
+
+  // ── Snap to quadrant ──────────────────────────────────────────────────────
+
+  function snapToQuadrant(x, y) {
+    puckEl.classList.add('snapping')
+    puckEl.classList.remove('dragging')
+    puckX = x
+    puckY = y
+    activate()
+    scheduleRender()
+    setTimeout(() => puckEl.classList.remove('snapping'), 350)
+  }
+
+  function activate() {
+    if (hasInteracted) return
+    hasInteracted = true
+    hintEl.style.display = 'none'
+    postcardsEl.classList.remove('hidden')
+  }
+
+  // ── Drag handling ─────────────────────────────────────────────────────────
+
+  function getEventCoords(e) {
+    const t = e.touches ? e.touches[0] : e
+    return { clientX: t.clientX, clientY: t.clientY }
+  }
+
+  function updatePuckFromEvent(e) {
+    const rect = compassEl.getBoundingClientRect()
+    const { clientX, clientY } = getEventCoords(e)
+    const relX = Math.max(0, Math.min(rect.width,  clientX - rect.left))
+    const relY = Math.max(0, Math.min(rect.height, clientY - rect.top))
+    puckX = Math.round((relX / rect.width)  * 200 - 100)
+    puckY = Math.round(100 - (relY / rect.height) * 200)
+  }
+
+  compassEl.addEventListener('mousedown', e => {
+    isDragging = true
+    puckEl.classList.add('dragging')
+    puckEl.classList.remove('snapping')
+    updatePuckFromEvent(e)
+    activate()
+    scheduleRender()
+  })
+
+  compassEl.addEventListener('touchstart', e => {
+    e.preventDefault()
+    isDragging = true
+    puckEl.classList.add('dragging')
+    puckEl.classList.remove('snapping')
+    updatePuckFromEvent(e)
+    activate()
+    scheduleRender()
+  }, { passive: false })
+
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return
+    updatePuckFromEvent(e)
+    scheduleRender()
+  })
+
+  document.addEventListener('touchmove', e => {
+    if (!isDragging) return
+    e.preventDefault()
+    updatePuckFromEvent(e)
+    scheduleRender()
+  }, { passive: false })
+
+  function endDrag() {
+    if (!isDragging) return
+    isDragging = false
+    puckEl.classList.remove('dragging')
+  }
+
+  document.addEventListener('mouseup', endDrag)
+  document.addEventListener('touchend', endDrag)
+  document.addEventListener('touchcancel', endDrag)
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  loadCoffees()
+</script>
+</body>
+</html>
