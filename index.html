@@ -99,7 +99,7 @@
     }
     .wordmark {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.3em;
       text-transform: uppercase;
@@ -134,12 +134,12 @@
       pointer-events: none;
     }
     #compass::before { /* horizontal */
-      width: 100%; height: 1px;
+      width: 100%; height: 2px;
       top: 50%; left: 0;
       transform: translateY(-50%);
     }
     #compass::after { /* vertical */
-      width: 1px; height: 100%;
+      width: 2px; height: 100%;
       left: 50%; top: 0;
       transform: translateX(-50%);
     }
@@ -147,7 +147,7 @@
     /* Axis labels */
     .axis-label {
       position: absolute;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 400;
       letter-spacing: 0.22em;
       text-transform: uppercase;
@@ -155,8 +155,8 @@
       pointer-events: none;
       white-space: nowrap;
     }
-    .axis-top    { top: 6px; left: 50%; transform: translateX(-50%); }
-    .axis-bottom { bottom: 6px; left: 50%; transform: translateX(-50%); }
+    .axis-top    { top: 10px; left: 50%; transform: translateX(-50%); }
+    .axis-bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
     .axis-left   { left: 6px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
     .axis-right  { right: 6px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
@@ -243,7 +243,7 @@
     #postcards {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       flex: 1;
       min-height: 0;
     }
