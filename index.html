@@ -113,11 +113,12 @@
       justify-content: center;
       align-items: center;
       padding: 0 16px;
+      max-height: 52vh;
     }
 
     #compass {
       position: relative;
-      width: min(calc(100vw - 32px), calc(100vh - 210px), 480px);
+      width: min(calc(100vw - 32px), 52vh, 480px);
       aspect-ratio: 1;
       cursor: crosshair;
       touch-action: none;
@@ -394,13 +395,8 @@
       flex: 0 0 auto;
       padding: 8px 16px 14px;
       display: flex;
-      justify-content: center;
-    }
-    .controls-inner {
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
     }
     .toggle-wrap {
       display: flex;
@@ -574,17 +570,15 @@
   </div>
 
   <div id="controls">
-    <div class="controls-inner">
-      <div id="prep-filter">
-        <button class="prep-btn active" data-prep="all" onclick="setPrepFilter('all')">All</button>
-        <button class="prep-btn" data-prep="espresso" onclick="setPrepFilter('espresso')">Espresso</button>
-        <button class="prep-btn" data-prep="filter" onclick="setPrepFilter('filter')">Filter</button>
-      </div>
-      <label class="toggle-wrap">
-        <input type="checkbox" id="decaf-toggle" class="toggle" onchange="onDecafChange()">
-        <span>Decaf only</span>
-      </label>
+    <div id="prep-filter">
+      <button class="prep-btn active" data-prep="all" onclick="setPrepFilter('all')">All</button>
+      <button class="prep-btn" data-prep="espresso" onclick="setPrepFilter('espresso')">Espresso</button>
+      <button class="prep-btn" data-prep="filter" onclick="setPrepFilter('filter')">Filter</button>
     </div>
+    <label class="toggle-wrap">
+      <input type="checkbox" id="decaf-toggle" class="toggle" onchange="onDecafChange()">
+      <span>Decaf only</span>
+    </label>
   </div>
 </div>
 

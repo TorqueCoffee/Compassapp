@@ -86,11 +86,29 @@ module.exports = async function handler(req, res) {
 
         const productImage = product.images && product.images[0] ? product.images[0].src : null;
 
+        // RAW VALUE LOG (first product only): console.log('postcard_image raw:', JSON.stringify(meta['custom.torque_postcard_image'] || meta['torque_postcard_image']))
+        // Shopify file metafields return a JSON string: "{\"image\":{\"url\":\"https://...\"}}"
+        // or a plain URL string, or null. Extract the URL from whichever shape we get.
+        const rawPostcard = meta['custom.torque_postcard_image'] || meta['torque_postcard_image'] || null;
+        let postcardUrl = productImage;
+        if (rawPostcard) {
+          if (typeof rawPostcard === 'string' && rawPostcard.startsWith('http')) {
+            postcardUrl = rawPostcard;
+          } else {
+            try {
+              const parsed = JSON.parse(rawPostcard);
+              postcardUrl = (parsed && (parsed.url || (parsed.image && parsed.image.url))) || productImage;
+            } catch (e) {
+              postcardUrl = productImage;
+            }
+          }
+        }
+
         return {
           name: product.title,
           handle: product.handle,
           image_url: productImage,
-          postcard_image: meta['custom.torque_postcard_image'] || meta['torque_postcard_image'] || productImage,
+          postcard_image: postcardUrl,
           quadrant_x: (qx !== null && !isNaN(qx)) ? qx : null,
           quadrant_y: (qy !== null && !isNaN(qy)) ? qy : null,
           feeling_pair: meta['custom.quadrant_profile'] || meta['quadrant_profile'] || null,
