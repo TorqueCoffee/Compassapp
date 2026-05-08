@@ -322,31 +322,16 @@
     }
     .postcard-img {
       width: 100%;
-      aspect-ratio: 5/7;
+      height: 120px;
       object-fit: cover;
+      object-position: top;
       display: block;
       background: rgba(255,255,255,0.04);
     }
     .postcard-img-placeholder {
       width: 100%;
-      aspect-ratio: 5/7;
+      height: 120px;
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
-    }
-    /* "Closest vibe" badge overlaid on image */
-    .off-zone-badge {
-      position: absolute;
-      bottom: 5px;
-      left: 6px;
-      font-size: 8px;
-      font-weight: 500;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: rgba(240,236,228,0.8);
-      background: rgba(0,0,0,0.55);
-      padding: 2px 5px;
-      border-radius: 3px;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
     }
     .postcard-body {
       padding: 8px 10px 10px;
@@ -740,13 +725,11 @@
       const notes = c.tasting_notes
         ? c.tasting_notes.split(',').map(n => n.trim()).join(' · ')
         : ''
-      const isOffZone = c.feeling_pair && c.feeling_pair !== puckQName
-      const badge = isOffZone ? `<div class="off-zone-badge">Closest vibe</div>` : ''
       const imgSrc = c.postcard_image || c.image_url
       const imgInner = imgSrc
         ? `<img class="postcard-img" src="${imgSrc}" alt="" loading="lazy">`
         : `<div class="postcard-img-placeholder"></div>`
-      const img = `<div class="postcard-img-wrap">${imgInner}${badge}</div>`
+      const img = `<div class="postcard-img-wrap">${imgInner}</div>`
 
       return `
         <div class="postcard" onclick="openLightbox(${idx})">
