@@ -314,6 +314,18 @@ Type `allow pasting` in Chrome console first to enable paste.
 
 ---
 
+## Shopify Metafields
+
+All Torque custom metafields use the `custom.torque_*` namespace (e.g., `custom.torque_compass_x`, `custom.torque_compass_y`, `custom.torque_postcard_image`). When querying via REST API with `?namespace=custom`, the returned `m.key` value is the part after `custom.` (e.g., `torque_compass_x`).
+
+---
+
+## Code Style
+
+Skip explanations. Write the code, show the diff, move to the next step. Minimize token usage.
+
+---
+
 ## Common Errors
 
 | Error | Cause | Fix |

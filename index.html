@@ -117,7 +117,6 @@
 
     #compass {
       position: relative;
-      /* Square: limited by viewport width minus padding, viewport height minus header+results+controls */
       width: min(calc(100vw - 32px), calc(100vh - 210px), 480px);
       aspect-ratio: 1;
       cursor: crosshair;
@@ -269,6 +268,7 @@
       padding: 10px 16px 0;
       display: flex;
       flex-direction: column;
+      overflow-y: auto;
     }
 
     /* Hint shown before first interaction */
@@ -292,8 +292,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      flex: 1;
-      min-height: 0;
+      align-content: start;
     }
     #postcards.hidden { display: none; }
 
@@ -304,7 +303,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      min-height: 0;
+      cursor: pointer;
     }
     .postcard-img-wrap {
       position: relative;
@@ -312,17 +311,17 @@
     }
     .postcard-img {
       width: 100%;
-      height: clamp(70px, 12vw, 110px);
+      aspect-ratio: 5/7;
       object-fit: cover;
       display: block;
       background: rgba(255,255,255,0.04);
     }
     .postcard-img-placeholder {
       width: 100%;
-      height: clamp(70px, 12vw, 110px);
+      aspect-ratio: 5/7;
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
     }
-    /* "Closest vibe" badge overlaid on image — takes zero card-body space */
+    /* "Closest vibe" badge overlaid on image */
     .off-zone-badge {
       position: absolute;
       bottom: 5px;
@@ -343,9 +342,6 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
     }
     .postcard-match {
       font-size: 10px;
@@ -359,21 +355,11 @@
       line-height: 1.2;
       color: var(--text);
     }
-    .postcard-feeling {
-      font-size: 9px;
-      font-weight: 300;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
     .postcard-notes {
       font-size: 10px;
       font-weight: 300;
       color: var(--text-muted);
       line-height: 1.4;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
     .postcard-btn {
       display: block;
@@ -399,6 +385,12 @@
       padding: 8px 16px 14px;
       display: flex;
       justify-content: center;
+    }
+    .controls-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
     }
     .toggle-wrap {
       display: flex;
@@ -438,6 +430,88 @@
     }
     .toggle:checked { background: var(--accent); }
     .toggle:checked::after { left: 16px; }
+
+    /* Prep filter segmented control */
+    #prep-filter {
+      display: flex;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .prep-btn {
+      background: transparent;
+      border: none;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+    }
+    .prep-btn:last-child { border-right: none; }
+    .prep-btn.active {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+
+    /* Lightbox */
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #lightbox.hidden { display: none; }
+    #lightbox-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+    }
+    #lightbox-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 90vw;
+    }
+    #lightbox-match {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+    }
+    #lightbox-img {
+      max-width: 90vw;
+      max-height: 80vh;
+      width: auto;
+      height: auto;
+      aspect-ratio: 5/7;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+    .lightbox-btn {
+      display: block;
+      padding: 10px 24px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-align: center;
+      transition: background 120ms ease;
+    }
+    .lightbox-btn:active { background: rgba(255,255,255,0.2); }
   </style>
 </head>
 <body>
@@ -493,25 +567,40 @@
   </div>
 
   <div id="controls">
-    <label class="toggle-wrap">
-      <input type="checkbox" id="decaf-toggle" class="toggle" onchange="renderMatches()">
-      <span>Decaf only</span>
-    </label>
+    <div class="controls-inner">
+      <div id="prep-filter">
+        <button class="prep-btn active" data-prep="all" onclick="setPrepFilter('all')">All</button>
+        <button class="prep-btn" data-prep="espresso" onclick="setPrepFilter('espresso')">Espresso</button>
+        <button class="prep-btn" data-prep="filter" onclick="setPrepFilter('filter')">Filter</button>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="decaf-toggle" class="toggle" onchange="onDecafChange()">
+        <span>Decaf only</span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="hidden">
+  <div id="lightbox-overlay" onclick="closeLightbox()"></div>
+  <div id="lightbox-content">
+    <div id="lightbox-match"></div>
+    <img id="lightbox-img" src="" alt="">
+    <a id="lightbox-btn" class="lightbox-btn" href="" target="_blank" rel="noopener noreferrer">Get This Coffee →</a>
   </div>
 </div>
 
 <script>
-  const MAX_DIST = Math.sqrt(200 * 200 + 200 * 200) // ~282.8
+  const MAX_DIST = Math.sqrt(200 * 200 + 200 * 200)
 
-  // Background tints per quadrant — dark, low-saturation, felt not seen
   const BG = {
-    tr: '#78051E', // warm brick
-    tl: '#785F05', // warm yellow
-    bl: '#05785F', // warm green
-    br: '#051E78', // deep indigo
+    tr: '#78051E',
+    tl: '#785F05',
+    bl: '#05785F',
+    br: '#051E78',
   }
 
-  // Accent colours for match % label
   const ACCENT = {
     tr: '#c8a96e',
     tl: '#6eb8b8',
@@ -520,19 +609,25 @@
   }
 
   let coffees = []
+  let currentMatches = []
   let puckX = 0
   let puckY = 0
   let isDragging = false
   let hasInteracted = false
   let rafId = null
+  let prepFilter = 'all'
 
-  const appEl       = document.getElementById('app')
-  const compassEl   = document.getElementById('compass')
-  const puckEl      = document.getElementById('puck')
-  const hintEl      = document.getElementById('hint')
-  const postcardsEl = document.getElementById('postcards')
-  const loadingEl   = document.getElementById('loading')
-  const decafToggle = document.getElementById('decaf-toggle')
+  const appEl        = document.getElementById('app')
+  const compassEl    = document.getElementById('compass')
+  const puckEl       = document.getElementById('puck')
+  const hintEl       = document.getElementById('hint')
+  const postcardsEl  = document.getElementById('postcards')
+  const loadingEl    = document.getElementById('loading')
+  const decafToggle  = document.getElementById('decaf-toggle')
+  const lightboxEl   = document.getElementById('lightbox')
+  const lbMatchEl    = document.getElementById('lightbox-match')
+  const lbImgEl      = document.getElementById('lightbox-img')
+  const lbBtnEl      = document.getElementById('lightbox-btn')
 
   // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -542,7 +637,33 @@
       if (!res.ok) throw new Error(`API returned ${res.status}`)
       coffees = await res.json()
       loadingEl.classList.add('hidden')
+
+      // Restore localStorage state silently
+      const savedPos = localStorage.getItem('torque_puck_position')
+      if (savedPos) {
+        try {
+          const pos = JSON.parse(savedPos)
+          puckX = typeof pos.x === 'number' ? pos.x : 0
+          puckY = typeof pos.y === 'number' ? pos.y : 0
+          hasInteracted = true
+          hintEl.style.display = 'none'
+          postcardsEl.classList.remove('hidden')
+        } catch(e) {}
+      }
+
+      const savedDecaf = localStorage.getItem('torque_decaf')
+      if (savedDecaf !== null) decafToggle.checked = savedDecaf === 'true'
+
+      const savedPrep = localStorage.getItem('torque_prep')
+      if (savedPrep) {
+        prepFilter = savedPrep
+        document.querySelectorAll('.prep-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.prep === prepFilter)
+        })
+      }
+
       renderPuck()
+      renderMatches()
     } catch (err) {
       loadingEl.innerHTML = `<div class="loading-error">Couldn't load coffees.<br>${err.message}</div>`
     }
@@ -557,15 +678,10 @@
     return 'br'
   }
 
-  function quadrantName(q) {
-    return { tr: 'Bright & Fruity', tl: 'Crisp & Clean', bl: 'Friendly & Round', br: 'Deep & Complex' }[q]
-  }
-
   function renderPuck() {
     puckEl.style.left = `${(puckX + 100) / 2}%`
     puckEl.style.top  = `${(100 - puckY) / 2}%`
 
-    // Don't tint or highlight any quadrant until user first interacts
     if (!hasInteracted) return
 
     const q = getQuadrant(puckX, puckY)
@@ -577,11 +693,19 @@
 
   // ── Matching engine ───────────────────────────────────────────────────────
 
+  function matchesPrep(c) {
+    if (prepFilter === 'all') return true
+    const preps = (c.preparations || '').toLowerCase()
+    if (prepFilter === 'espresso') return preps.includes('espresso') || preps.includes('omni')
+    if (prepFilter === 'filter') return preps.includes('filter') || preps.includes('omni')
+    return true
+  }
+
   function findMatches() {
     const decafOnly = decafToggle.checked
     const pool = coffees.filter(c => {
       const isDecaf = c.name.toLowerCase().includes('decaf')
-      return decafOnly ? isDecaf : !isDecaf
+      return (decafOnly ? isDecaf : !isDecaf) && matchesPrep(c)
     })
 
     return pool
@@ -592,7 +716,6 @@
       })
       .sort((a, b) => {
         if (a.dist !== b.dist) return a.dist - b.dist
-        // Tie-break: newest product first
         return new Date(b.created_at) - new Date(a.created_at)
       })
       .slice(0, 2)
@@ -601,36 +724,36 @@
   function renderMatches() {
     if (!hasInteracted) return
 
-    const matches = findMatches()
+    currentMatches = findMatches()
     const q = getQuadrant(puckX, puckY)
     const accent = ACCENT[q]
-    const puckQName = quadrantName(q)
+    const puckQName = { tr: 'Bright & Fruity', tl: 'Crisp & Clean', bl: 'Friendly & Round', br: 'Deep & Complex' }[q]
 
-    if (!matches.length) {
-      postcardsEl.innerHTML = `<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;"><p style="font-size:13px;color:var(--text-muted);text-align:center;font-style:italic;">No coffees found for this zone.</p></div>`
+    if (!currentMatches.length) {
+      postcardsEl.innerHTML = `<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:24px 0;"><p style="font-size:13px;color:var(--text-muted);text-align:center;font-style:italic;">No coffees match these filters right now.<br>Try adjusting your filters.</p></div>`
       return
     }
 
-    postcardsEl.innerHTML = matches.map(c => {
+    postcardsEl.innerHTML = currentMatches.map((c, idx) => {
       const notes = c.tasting_notes
         ? c.tasting_notes.split(',').map(n => n.trim()).join(' · ')
         : ''
       const isOffZone = c.feeling_pair && c.feeling_pair !== puckQName
       const badge = isOffZone ? `<div class="off-zone-badge">Closest vibe</div>` : ''
-      const imgInner = c.image_url
-        ? `<img class="postcard-img" src="${c.image_url}" alt="" loading="lazy">`
+      const imgSrc = c.postcard_image || c.image_url
+      const imgInner = imgSrc
+        ? `<img class="postcard-img" src="${imgSrc}" alt="" loading="lazy">`
         : `<div class="postcard-img-placeholder"></div>`
       const img = `<div class="postcard-img-wrap">${imgInner}${badge}</div>`
 
       return `
-        <div class="postcard">
+        <div class="postcard" onclick="openLightbox(${idx})">
           ${img}
           <div class="postcard-body">
             <div class="postcard-match" style="color:${accent}">${c.match}% match</div>
             <div class="postcard-name">${c.name}</div>
-            ${c.feeling_pair ? `<div class="postcard-feeling">${c.feeling_pair}</div>` : ''}
-            ${notes ? `<div class="postcard-notes" title="${notes}">${notes}</div>` : ''}
-            <a class="postcard-btn" href="${c.product_url}" target="_blank" rel="noopener noreferrer">Get This Coffee →</a>
+            ${notes ? `<div class="postcard-notes">${notes}</div>` : ''}
+            <a class="postcard-btn" href="${c.product_url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Get This Coffee →</a>
           </div>
         </div>
       `
@@ -642,9 +765,65 @@
     rafId = requestAnimationFrame(() => {
       renderPuck()
       renderMatches()
+      savePuckPosition()
       rafId = null
     })
   }
+
+  // ── localStorage ──────────────────────────────────────────────────────────
+
+  function savePuckPosition() {
+    localStorage.setItem('torque_puck_position', JSON.stringify({ x: puckX, y: puckY }))
+  }
+
+  function onDecafChange() {
+    localStorage.setItem('torque_decaf', decafToggle.checked)
+    renderMatches()
+  }
+
+  function setPrepFilter(val) {
+    prepFilter = val
+    localStorage.setItem('torque_prep', val)
+    document.querySelectorAll('.prep-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.prep === val)
+    })
+    renderMatches()
+  }
+
+  // ── Lightbox ──────────────────────────────────────────────────────────────
+
+  function openLightbox(idx) {
+    const c = currentMatches[idx]
+    if (!c) return
+    const q = getQuadrant(puckX, puckY)
+    const accent = ACCENT[q]
+    const imgSrc = c.postcard_image || c.image_url || ''
+
+    lbMatchEl.textContent = `${c.match}% match`
+    lbMatchEl.style.color = accent
+    lbImgEl.src = imgSrc
+    lbBtnEl.href = c.product_url
+    lightboxEl.classList.remove('hidden')
+  }
+
+  function closeLightbox() {
+    lightboxEl.classList.add('hidden')
+    lbImgEl.src = ''
+  }
+
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox()
+  })
+
+  // Swipe down to close lightbox
+  let lbTouchStartY = 0
+  lightboxEl.addEventListener('touchstart', e => {
+    lbTouchStartY = e.touches[0].clientY
+  }, { passive: true })
+  lightboxEl.addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientY - lbTouchStartY > 60) closeLightbox()
+  }, { passive: true })
 
   // ── Snap to quadrant ──────────────────────────────────────────────────────
 

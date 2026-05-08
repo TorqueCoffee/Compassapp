@@ -80,14 +80,18 @@ module.exports = async function handler(req, res) {
         const qx = rawX !== undefined ? parseInt(rawX, 10) : null;
         const qy = rawY !== undefined ? parseInt(rawY, 10) : null;
 
+        const productImage = product.images && product.images[0] ? product.images[0].src : null;
+
         return {
           name: product.title,
           handle: product.handle,
-          image_url: product.images && product.images[0] ? product.images[0].src : null,
+          image_url: productImage,
+          postcard_image: meta['torque_postcard_image'] || productImage,
           quadrant_x: (qx !== null && !isNaN(qx)) ? qx : null,
           quadrant_y: (qy !== null && !isNaN(qy)) ? qy : null,
           feeling_pair: meta['quadrant_profile'] || null,
           tasting_notes: meta['3_flavors'] || null,
+          preparations: meta['torque_preparations'] || null,
           product_url: `https://torque.coffee/products/${product.handle}?utm_source=palate_passport&utm_medium=pwa&utm_campaign=v0`,
           in_stock: inStock,
           created_at: product.created_at,
