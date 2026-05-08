@@ -61,12 +61,16 @@ module.exports = async function handler(req, res) {
     const coffees = await Promise.all(
       torqueProducts.map(async (product) => {
         const mRes = await fetch(
-          `${baseUrl}/products/${product.id}/metafields.json?namespace=custom`,
+          `${baseUrl}/products/${product.id}/metafields.json`,
           { headers: shopHeaders }
         );
         const { metafields } = await mRes.json();
         const meta = {};
-        (metafields || []).forEach(m => { meta[m.key] = m.value; });
+        // Index by both short key and namespace.key so lookups work either way
+        (metafields || []).forEach(m => {
+          meta[m.key] = m.value;
+          meta[`${m.namespace}.${m.key}`] = m.value;
+        });
 
         // In-stock: any variant that has no inventory tracking, positive qty, or allow-oversell policy
         const inStock = product.variants.some(v =>
@@ -75,8 +79,8 @@ module.exports = async function handler(req, res) {
           v.inventory_policy === 'continue'
         );
 
-        const rawX = meta['torque_compass_x'];
-        const rawY = meta['torque_compass_y'];
+        const rawX = meta['custom.torque_compass_x'] || meta['torque_compass_x'];
+        const rawY = meta['custom.torque_compass_y'] || meta['torque_compass_y'];
         const qx = rawX !== undefined ? parseInt(rawX, 10) : null;
         const qy = rawY !== undefined ? parseInt(rawY, 10) : null;
 
@@ -86,12 +90,12 @@ module.exports = async function handler(req, res) {
           name: product.title,
           handle: product.handle,
           image_url: productImage,
-          postcard_image: meta['torque_postcard_image'] || productImage,
+          postcard_image: meta['custom.torque_postcard_image'] || meta['torque_postcard_image'] || productImage,
           quadrant_x: (qx !== null && !isNaN(qx)) ? qx : null,
           quadrant_y: (qy !== null && !isNaN(qy)) ? qy : null,
-          feeling_pair: meta['quadrant_profile'] || null,
-          tasting_notes: meta['3_flavors'] || null,
-          preparations: meta['torque_preparations'] || null,
+          feeling_pair: meta['custom.quadrant_profile'] || meta['quadrant_profile'] || null,
+          tasting_notes: meta['custom.3_flavors'] || meta['3_flavors'] || null,
+          preparations: meta['custom.torque_preparations'] || meta['torque_preparations'] || null,
           product_url: `https://torque.coffee/products/${product.handle}?utm_source=palate_passport&utm_medium=pwa&utm_campaign=v0`,
           in_stock: inStock,
           created_at: product.created_at,

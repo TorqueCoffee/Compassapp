@@ -239,20 +239,30 @@
     /* Puck */
     #puck {
       position: absolute;
-      width: 44px;
-      height: 44px;
+      width: 65px;
+      height: 65px;
       border-radius: 50%;
-      background: var(--puck);
+      background: #E58825;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 0 1.5px rgba(255,255,255,0.2), 0 4px 24px rgba(0,0,0,0.55);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
       z-index: 10;
       cursor: grab;
       transition: box-shadow 150ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #puck img {
+      width: 55px;
+      height: auto;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
     #puck.dragging {
       cursor: grabbing;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.25), 0 8px 32px rgba(0,0,0,0.65);
-      transform: translate(-50%, -50%) scale(1.12);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.3);
+      transform: translate(-50%, -50%) scale(1.08);
     }
     #puck.snapping {
       transition:
@@ -518,17 +528,14 @@
 
 <!-- Loading overlay -->
 <div id="loading">
-  <img src="/torque-logo.png" alt="Torque Coffee" style="height:40px;margin-bottom:4px;opacity:0.85;" onerror="this.style.display='none'">
+  <img src="/Torque-logo.png" alt="Torque Coffee" style="height:40px;margin-bottom:4px;opacity:0.85;" onerror="this.style.display='none'">
   <span class="loading-wordmark">Torque Coffee</span>
   <div class="loading-dots"><span></span><span></span><span></span></div>
 </div>
 
 <!-- App -->
 <div id="app">
-  <header>
-    <img src="/torque-logo.png" alt="Torque Coffee" style="height:22px;opacity:0.7;" onerror="this.style.display='none'">
-    <span class="wordmark" id="header-wordmark">Torque Coffee</span>
-  </header>
+  <header></header>
 
   <div id="compass-section">
     <div id="compass">
@@ -555,7 +562,7 @@
       <span class="axis-arrow arrow-bottom"></span>
       <span class="axis-arrow arrow-left"></span>
       <span class="axis-arrow arrow-right"></span>
-      <div id="puck"></div>
+      <div id="puck"><img src="/Torque-logo-cream.png" alt=""></div>
     </div>
   </div>
 
@@ -695,7 +702,8 @@
 
   function matchesPrep(c) {
     if (prepFilter === 'all') return true
-    const preps = (c.preparations || '').toLowerCase()
+    if (!c.preparations) return true  // no prep data = show everywhere
+    const preps = c.preparations.toLowerCase()
     if (prepFilter === 'espresso') return preps.includes('espresso') || preps.includes('omni')
     if (prepFilter === 'filter') return preps.includes('filter') || preps.includes('omni')
     return true
