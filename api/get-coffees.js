@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
     const coffees = await Promise.all(
       torqueProducts.map(async (product) => {
         const mRes = await fetch(
-          `${baseUrl}/products/${product.id}/metafields.json?namespace=torque`,
+          `${baseUrl}/products/${product.id}/metafields.json?namespace=custom`,
           { headers: shopHeaders }
         );
         const { metafields } = await mRes.json();
@@ -75,8 +75,10 @@ module.exports = async function handler(req, res) {
           v.inventory_policy === 'continue'
         );
 
-        const qx = meta.quadrant_x !== undefined ? parseInt(meta.quadrant_x, 10) : null;
-        const qy = meta.quadrant_y !== undefined ? parseInt(meta.quadrant_y, 10) : null;
+        const rawX = meta['torque_compass_x'];
+        const rawY = meta['torque_compass_y'];
+        const qx = rawX !== undefined ? parseInt(rawX, 10) : null;
+        const qy = rawY !== undefined ? parseInt(rawY, 10) : null;
 
         return {
           name: product.title,
@@ -84,8 +86,8 @@ module.exports = async function handler(req, res) {
           image_url: product.images && product.images[0] ? product.images[0].src : null,
           quadrant_x: (qx !== null && !isNaN(qx)) ? qx : null,
           quadrant_y: (qy !== null && !isNaN(qy)) ? qy : null,
-          feeling_pair: meta.feeling_pair || null,
-          tasting_notes: meta.tasting_notes || null,
+          feeling_pair: meta['quadrant_profile'] || null,
+          tasting_notes: meta['3_flavors'] || null,
           product_url: `https://torque.coffee/products/${product.handle}?utm_source=palate_passport&utm_medium=pwa&utm_campaign=v0`,
           in_stock: inStock,
           created_at: product.created_at,
@@ -93,22 +95,8 @@ module.exports = async function handler(req, res) {
       })
     );
 
-    // DEBUG — fetch ALL metafields on first Torque product, no namespace filter
-    if (torqueProducts.length > 0) {
-      const first = torqueProducts[0];
-      const mRes = await fetch(
-        `${baseUrl}/products/${first.id}/metafields.json`,
-        { headers: shopHeaders }
-      );
-      const mBody = await mRes.json();
-      return res.status(200).json({
-        product_id: first.id,
-        product_name: first.title,
-        metafield_status: mRes.status,
-        metafields: mBody,
-      });
-    }
-    return res.status(200).json({ error: 'no torque products found' });
+    // Return only coffees with complete quadrant data AND in stock
+    const ready = coffees.filter(c => c.in_stock && c.quadrant_x !== null && c.quadrant_y !== null);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
