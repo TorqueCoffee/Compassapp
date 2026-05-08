@@ -92,10 +92,7 @@
 
     /* Header */
     header {
-      flex: 0 0 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      flex: 0 0 8px;
     }
     .wordmark {
       font-family: 'Jura', serif;
@@ -317,15 +314,18 @@
       cursor: pointer;
     }
     .postcard-img-wrap {
-      position: relative;
       flex-shrink: 0;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
     }
     .postcard-img {
+      display: block;
       width: 100%;
       height: 120px;
       object-fit: cover;
       object-position: top;
-      display: block;
+      border-radius: 0;
       background: rgba(255,255,255,0.04);
     }
     .postcard-img-placeholder {
