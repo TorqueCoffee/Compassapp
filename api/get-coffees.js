@@ -93,10 +93,14 @@ module.exports = async function handler(req, res) {
       })
     );
 
-    // 5. Return only coffees with complete quadrant data AND in stock
-    const ready = coffees.filter(c => c.in_stock && c.quadrant_x !== null && c.quadrant_y !== null);
-
-    res.status(200).json(ready);
+    // DEBUG — remove before launch
+    const debug = {
+      total_products: allProducts.length,
+      vendors: [...new Set(allProducts.map(p => p.vendor))],
+      torque_count: torqueProducts.length,
+      coffees_raw: coffees,
+    };
+    return res.status(200).json(debug);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
