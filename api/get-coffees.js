@@ -93,14 +93,22 @@ module.exports = async function handler(req, res) {
       })
     );
 
-    // DEBUG — remove before launch
-    const debug = {
-      total_products: allProducts.length,
-      vendors: [...new Set(allProducts.map(p => p.vendor))],
-      torque_count: torqueProducts.length,
-      coffees_raw: coffees,
-    };
-    return res.status(200).json(debug);
+    // DEBUG — fetch ALL metafields on first Torque product, no namespace filter
+    if (torqueProducts.length > 0) {
+      const first = torqueProducts[0];
+      const mRes = await fetch(
+        `${baseUrl}/products/${first.id}/metafields.json`,
+        { headers: shopHeaders }
+      );
+      const mBody = await mRes.json();
+      return res.status(200).json({
+        product_id: first.id,
+        product_name: first.title,
+        metafield_status: mRes.status,
+        metafields: mBody,
+      });
+    }
+    return res.status(200).json({ error: 'no torque products found' });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
