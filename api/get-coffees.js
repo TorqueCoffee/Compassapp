@@ -98,6 +98,8 @@ module.exports = async function handler(req, res) {
     // Return only coffees with complete quadrant data AND in stock
     const ready = coffees.filter(c => c.in_stock && c.quadrant_x !== null && c.quadrant_y !== null);
 
+    res.status(200).json(ready);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
