@@ -144,6 +144,53 @@
       transform: translateX(-50%);
     }
 
+    /* Circle ring around compass */
+    .compass-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(240, 236, 228, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Axis arrow tips */
+    .axis-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .arrow-top {
+      top: 2px; left: 50%;
+      transform: translateX(-50%);
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-bottom: 6px solid rgba(240,236,228,0.25);
+    }
+    .arrow-bottom {
+      bottom: 2px; left: 50%;
+      transform: translateX(-50%);
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 6px solid rgba(240,236,228,0.25);
+    }
+    .arrow-left {
+      left: 2px; top: 50%;
+      transform: translateY(-50%);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-right: 6px solid rgba(240,236,228,0.25);
+    }
+    .arrow-right {
+      right: 2px; top: 50%;
+      transform: translateY(-50%);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 6px solid rgba(240,236,228,0.25);
+    }
+
     /* Axis labels */
     .axis-label {
       position: absolute;
@@ -154,6 +201,7 @@
       color: var(--text-muted);
       pointer-events: none;
       white-space: nowrap;
+      z-index: 2;
     }
     .axis-top    { top: 10px; left: 50%; transform: translateX(-50%); }
     .axis-bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
@@ -258,19 +306,37 @@
       flex-direction: column;
       min-height: 0;
     }
+    .postcard-img-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
     .postcard-img {
       width: 100%;
-      aspect-ratio: 16 / 9;
+      height: clamp(70px, 12vw, 110px);
       object-fit: cover;
       display: block;
       background: rgba(255,255,255,0.04);
-      flex-shrink: 0;
     }
     .postcard-img-placeholder {
       width: 100%;
-      aspect-ratio: 16 / 9;
+      height: clamp(70px, 12vw, 110px);
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
-      flex-shrink: 0;
+    }
+    /* "Closest vibe" badge overlaid on image — takes zero card-body space */
+    .off-zone-badge {
+      position: absolute;
+      bottom: 5px;
+      left: 6px;
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: rgba(240,236,228,0.8);
+      background: rgba(0,0,0,0.55);
+      padding: 2px 5px;
+      border-radius: 3px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
     .postcard-body {
       padding: 8px 10px 10px;
@@ -280,13 +346,6 @@
       flex: 1;
       min-height: 0;
       overflow: hidden;
-    }
-    .postcard-aside {
-      font-size: 9px;
-      font-weight: 300;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      opacity: 0.8;
     }
     .postcard-match {
       font-size: 10px;
@@ -385,6 +444,7 @@
 
 <!-- Loading overlay -->
 <div id="loading">
+  <img src="/torque-logo.png" alt="Torque Coffee" style="height:40px;margin-bottom:4px;opacity:0.85;" onerror="this.style.display='none'">
   <span class="loading-wordmark">Torque Coffee</span>
   <div class="loading-dots"><span></span><span></span><span></span></div>
 </div>
@@ -392,7 +452,8 @@
 <!-- App -->
 <div id="app">
   <header>
-    <span class="wordmark">Torque Coffee</span>
+    <img src="/torque-logo.png" alt="Torque Coffee" style="height:22px;opacity:0.7;" onerror="this.style.display='none'">
+    <span class="wordmark" id="header-wordmark">Torque Coffee</span>
   </header>
 
   <div id="compass-section">
@@ -415,6 +476,11 @@
         <span class="fp-label">Deep &amp;<br>Complex</span>
       </div>
 
+      <div class="compass-ring"></div>
+      <span class="axis-arrow arrow-top"></span>
+      <span class="axis-arrow arrow-bottom"></span>
+      <span class="axis-arrow arrow-left"></span>
+      <span class="axis-arrow arrow-right"></span>
       <div id="puck"></div>
     </div>
   </div>
@@ -499,6 +565,9 @@
     puckEl.style.left = `${(puckX + 100) / 2}%`
     puckEl.style.top  = `${(100 - puckY) / 2}%`
 
+    // Don't tint or highlight any quadrant until user first interacts
+    if (!hasInteracted) return
+
     const q = getQuadrant(puckX, puckY)
     appEl.style.background = BG[q]
 
@@ -510,9 +579,10 @@
 
   function findMatches() {
     const decafOnly = decafToggle.checked
-    const pool = coffees.filter(c =>
-      decafOnly ? c.name.toLowerCase().includes('decaf') : true
-    )
+    const pool = coffees.filter(c => {
+      const isDecaf = c.name.toLowerCase().includes('decaf')
+      return decafOnly ? isDecaf : !isDecaf
+    })
 
     return pool
       .map(c => {
@@ -545,21 +615,17 @@
       const notes = c.tasting_notes
         ? c.tasting_notes.split(',').map(n => n.trim()).join(' · ')
         : ''
-      const img = c.image_url
+      const isOffZone = c.feeling_pair && c.feeling_pair !== puckQName
+      const badge = isOffZone ? `<div class="off-zone-badge">Closest vibe</div>` : ''
+      const imgInner = c.image_url
         ? `<img class="postcard-img" src="${c.image_url}" alt="" loading="lazy">`
         : `<div class="postcard-img-placeholder"></div>`
-
-      // Show "closest vibe" note when the best match isn't in the puck's current zone
-      const isOffZone = c.feeling_pair && c.feeling_pair !== puckQName
-      const aside = isOffZone
-        ? `<div class="postcard-aside">Closest vibe in stock</div>`
-        : ''
+      const img = `<div class="postcard-img-wrap">${imgInner}${badge}</div>`
 
       return `
         <div class="postcard">
           ${img}
           <div class="postcard-body">
-            ${aside}
             <div class="postcard-match" style="color:${accent}">${c.match}% match</div>
             <div class="postcard-name">${c.name}</div>
             ${c.feeling_pair ? `<div class="postcard-feeling">${c.feeling_pair}</div>` : ''}
