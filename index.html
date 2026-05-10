@@ -12,7 +12,7 @@
   <title>Torque Coffee — Find Your Flavor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -35,6 +35,9 @@
       --q-tr-active: rgba(216, 72, 16, 0.55);
       --q-bl-active: rgba(104, 64, 32, 0.55);
       --q-br-active: rgba(136, 80, 248, 0.55);
+
+      /* Card left-border accent — set dynamically via JS */
+      --card-accent: rgba(255, 255, 255, 0.08);
     }
 
     html, body {
@@ -88,7 +91,7 @@
     .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes pulse {
       0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-      40% { opacity: 1; transform: scale(1); }
+      40%           { opacity: 1;   transform: scale(1); }
     }
     .loading-error {
       font-size: 16px;
@@ -106,9 +109,7 @@
     }
 
     /* Header */
-    header {
-      flex: 0 0 8px;
-    }
+    header { flex: 0 0 8px; }
 
     /* Compass section */
     #compass-section {
@@ -132,7 +133,7 @@
       overflow: visible;
     }
 
-    /* Crosshair axis lines — machine dividers, embedded between quadrant panels */
+    /* Crosshair axis lines — machine dividers */
     #compass::before, #compass::after {
       content: '';
       position: absolute;
@@ -140,20 +141,20 @@
       pointer-events: none;
       z-index: 2;
     }
-    #compass::before { /* horizontal */
+    #compass::before {
       width: 100%; height: 2px;
       top: 50%; left: 0;
       transform: translateY(-50%);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 -1px 0 rgba(255, 255, 255, 0.05);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 -1px 0 rgba(255,255,255,0.05);
     }
-    #compass::after { /* vertical */
+    #compass::after {
       width: 2px; height: 100%;
       left: 50%; top: 0;
       transform: translateX(-50%);
-      box-shadow: 1px 0 2px rgba(0, 0, 0, 0.3), -1px 0 0 rgba(255, 255, 255, 0.05);
+      box-shadow: 1px 0 2px rgba(0,0,0,0.3), -1px 0 0 rgba(255,255,255,0.05);
     }
 
-    /* Quadrant color panels — clipped to compass circle, behind all other layers */
+    /* Quadrant color panels */
     .compass-quadrants {
       position: absolute;
       inset: 0;
@@ -178,7 +179,7 @@
     .quadrant.q-bl.active { background-color: var(--q-bl-active); }
     .quadrant.q-br.active { background-color: var(--q-br-active); }
 
-    /* Circle ring around compass */
+    /* Circle ring */
     .compass-ring {
       position: absolute;
       inset: 0;
@@ -188,7 +189,7 @@
       z-index: 1;
     }
 
-    /* Surface noise overlay — soft-light works on dark backgrounds, overlay does not */
+    /* Surface noise */
     .compass-noise {
       position: absolute;
       inset: 0;
@@ -203,8 +204,7 @@
     /* Axis arrow tips */
     .axis-arrow {
       position: absolute;
-      width: 0;
-      height: 0;
+      width: 0; height: 0;
       pointer-events: none;
       z-index: 2;
     }
@@ -237,7 +237,7 @@
       border-left: 7px solid rgba(240,236,228,0.2);
     }
 
-    /* Axis labels — primary navigation cues, clearly legible */
+    /* Axis labels — inset 16px for breathing room from edges */
     .axis-label {
       position: absolute;
       font-size: 16px;
@@ -249,13 +249,12 @@
       white-space: nowrap;
       z-index: 2;
     }
-    .axis-top    { top: 10px; left: 50%; transform: translateX(-50%); }
-    .axis-bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    /* translateX(-50%/+50%) anchors the rotation center at the edge, matching top/bottom placement */
-    .axis-left   { left: 10px; top: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg); }
-    .axis-right  { right: 10px; top: 50%; transform: translateX(50%) translateY(-50%) rotate(90deg); }
+    .axis-top    { top: 16px; left: 50%; transform: translateX(-50%); }
+    .axis-bottom { bottom: 16px; left: 50%; transform: translateX(-50%); }
+    .axis-left   { left: 16px; top: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg); }
+    .axis-right  { right: 16px; top: 50%; transform: translateX(50%) translateY(-50%) rotate(90deg); }
 
-    /* Feeling pair tap targets — centered in each quadrant */
+    /* Feeling pair tap targets */
     .fp {
       position: absolute;
       width: 46%;
@@ -271,7 +270,6 @@
     .fp.bl { bottom: 0; left: 0; }
     .fp.br { bottom: 0; right: 0; }
 
-    /* Badge treatment — engraved label plate */
     .fp-label {
       font-family: 'DM Sans', sans-serif;
       font-size: 11px;
@@ -297,7 +295,7 @@
       border-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* Puck — physical depth + grab/release physics */
+    /* Puck */
     #puck {
       position: absolute;
       width: 65px;
@@ -305,7 +303,6 @@
       border-radius: 50%;
       background: #E58825;
       transform: translate(-50%, -50%);
-      /* Warm edge ring visible on dark bg + strong lift shadows */
       box-shadow:
         0 0 0 2px rgba(255, 200, 100, 0.2),
         0 4px 12px rgba(0, 0, 0, 0.5),
@@ -316,7 +313,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Release settle: spring on scale/shadow only, not position */
       transition: transform 150ms cubic-bezier(0.34, 1.3, 0.64, 1),
                   box-shadow 150ms ease-out;
     }
@@ -327,7 +323,6 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    /* Dragging state: lift off surface fast, track finger 1:1 */
     #puck.dragging {
       cursor: grabbing;
       transform: translate(-50%, -50%) scale(1.08);
@@ -335,10 +330,8 @@
         0 0 0 2px rgba(255, 200, 100, 0.35),
         0 6px 18px rgba(0, 0, 0, 0.6),
         0 12px 35px rgba(0, 0, 0, 0.35);
-      /* Fast entry transition for scale/shadow only */
       transition: transform 60ms ease-out, box-shadow 60ms ease-out;
     }
-    /* Snap-to-quadrant: position animates, scale/shadow use base transition */
     #puck.snapping {
       transition:
         left 300ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -347,7 +340,7 @@
         box-shadow 150ms ease-out;
     }
 
-    /* Share vibe button — positioned on compass-section (outside drag element) */
+    /* Share button — sibling of compass, outside drag zone */
     #share-btn {
       position: absolute;
       bottom: 0;
@@ -357,58 +350,60 @@
       height: 44px;
       border: none;
       background: none;
-      padding: 0;
+      padding: 4px 0 0;
       cursor: pointer;
       color: #E58825;
       opacity: 0;
       pointer-events: none;
       transition: opacity 200ms ease-out;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 2px;
     }
     #share-btn:hover { opacity: 1 !important; }
     .puck-moved #share-btn {
       opacity: 0.7;
       pointer-events: auto;
     }
-    /* Pulse animation on share confirm — ease-out correct here (confirmation gesture, not movement) */
+    .share-label {
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: center;
+    }
     @keyframes sharePulse {
       0%   { transform: scale(1); }
       50%  { transform: scale(1.2); }
       100% { transform: scale(1); }
     }
-    #share-btn.pulsing {
-      animation: sharePulse 300ms ease-out both;
+    #share-btn.pulsing { animation: sharePulse 300ms ease-out both; }
+
+    /* Instruction text — permanent chassis label below compass */
+    #instruction {
+      flex: 0 0 auto;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: rgba(255, 255, 255, 0.45);
+      text-align: center;
+      padding: 10px 24px 14px;
     }
 
     /* Results section */
     #results {
       flex: 1 1 auto;
       min-height: 0;
-      padding: 10px 16px 0;
+      padding: 0 16px 0;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
     }
 
-    /* Hint shown before first interaction */
-    #hint {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .hint-text {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 15px;
-      font-style: italic;
-      color: var(--text-muted);
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    /* Postcards grid — Change 8: spring entry */
+    /* Postcards grid */
     #postcards {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -422,44 +417,56 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* Card pulse — single affordance signal on result update */
+    @keyframes cardPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(229, 136, 37, 0.3); }
+      70%  { box-shadow: 0 0 0 6px rgba(229, 136, 37, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(229, 136, 37, 0); }
+    }
+
     .postcard {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border-left: 3px solid var(--card-accent, rgba(255,255,255,0.08));
+      border-radius: 12px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       cursor: pointer;
       animation: cardReveal 350ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+      transition: border-left-color 250ms ease-out;
     }
     .postcard:nth-child(2) { animation-delay: 40ms; }
+    .postcard.pulse { animation: cardPulse 800ms ease-out 1; }
 
+    /* Card image — product box photo, rounded square */
     .postcard-img-wrap {
       position: relative;
       flex-shrink: 0;
-      margin: 0;
-      padding: 0;
+      padding: 8px 8px 0;
       line-height: 0;
     }
     .postcard-img {
       display: block;
       width: 100%;
-      height: 120px;
+      aspect-ratio: 1 / 1;
       object-fit: cover;
-      object-position: top;
-      border-radius: 0;
+      object-position: center;
+      border-radius: 8px;
       background: rgba(255,255,255,0.04);
     }
     .postcard-img-placeholder {
       width: 100%;
-      height: 120px;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
     }
-    /* Match % overlays the card image — warm LED readout */
+
+    /* Match % — warm LED readout overlaying image */
     .postcard-match {
       position: absolute;
       bottom: 7px;
-      left: 7px;
+      left: 15px;
       font-size: 13px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
@@ -475,41 +482,46 @@
       -webkit-backdrop-filter: blur(4px);
       line-height: 1;
     }
+
+    /* Card body */
     .postcard-body {
       padding: 8px 10px 10px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
     .postcard-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(13px, 3vw, 16px);
-      font-weight: 600;
-      line-height: 1.2;
-      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: rgba(255, 255, 255, 0.95);
     }
     .postcard-notes {
-      font-size: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
       font-weight: 400;
-      color: rgba(240, 236, 228, 0.7);
-      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.3;
+      margin-top: 2px;
     }
 
-    /* Button depth — gradient surface + warm shadow */
+    /* Card button — opens lightbox */
     .postcard-btn {
       display: block;
       margin-top: 6px;
-      padding: 6px 8px;
+      padding: 7px 8px;
       background: linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%);
       border: 1px solid rgba(255,255,255,0.18);
       border-radius: 6px;
       box-shadow: 0 1px 2px rgba(30, 15, 0, 0.2);
       color: var(--text);
-      text-decoration: none;
-      font-size: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.05em;
       text-align: center;
+      cursor: pointer;
       transition: background 120ms ease, transform 80ms ease, box-shadow 80ms ease;
       flex-shrink: 0;
     }
@@ -517,85 +529,6 @@
       transform: translateY(1.5px);
       background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.10) 100%);
       box-shadow: 0 0px 1px rgba(30, 15, 0, 0.15);
-    }
-
-    /* Controls bar */
-    #controls {
-      flex: 0 0 auto;
-      padding: 8px 16px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .toggle-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .toggle-wrap span {
-      font-size: 10px;
-      font-weight: 400;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(240, 236, 228, 0.65);
-    }
-    .toggle {
-      position: relative;
-      width: 32px;
-      height: 18px;
-      appearance: none;
-      -webkit-appearance: none;
-      background: rgba(255,255,255,0.1);
-      border-radius: 9px;
-      cursor: pointer;
-      transition: background 200ms ease;
-      flex-shrink: 0;
-    }
-    .toggle::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      top: 2px;
-      left: 2px;
-      transition: left 200ms ease;
-    }
-    .toggle:checked { background: var(--accent); }
-    .toggle:checked::after { left: 16px; }
-
-    /* Prep filter segmented control — Change 4: button depth */
-    #prep-filter {
-      display: flex;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .prep-btn {
-      background: transparent;
-      border: none;
-      border-right: 1px solid rgba(255,255,255,0.1);
-      color: var(--text-muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 10px;
-      font-weight: 400;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      cursor: pointer;
-      transition: background 120ms ease, color 120ms ease, transform 80ms ease, box-shadow 80ms ease;
-    }
-    .prep-btn:last-child { border-right: none; }
-    .prep-btn.active {
-      background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-      color: var(--text);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-    }
-    .prep-btn:active {
-      transform: translateY(1px);
-      box-shadow: none;
     }
 
     /* Lightbox */
@@ -613,7 +546,6 @@
       inset: 0;
       background: rgba(0,0,0,0.85);
     }
-    /* Change 8: Spring open for lightbox content */
     @keyframes lbOpen {
       from { opacity: 0; transform: translateY(16px) scale(0.97); }
       to   { opacity: 1; transform: none; }
@@ -709,7 +641,7 @@
       animation: lbOpen 280ms cubic-bezier(0.34, 1.3, 0.64, 1) 120ms both;
     }
 
-    /* Lightbox match % — warm readout glow, no backing needed on solid dark bg */
+    /* Lightbox match % — warm readout glow */
     #lightbox-match {
       font-size: 13px;
       font-weight: 700;
@@ -721,7 +653,7 @@
         0 0 20px rgba(229, 136, 37, 0.15);
     }
 
-    /* Lightbox button — button depth */
+    /* Lightbox button */
     .lightbox-btn {
       display: block;
       padding: 10px 24px;
@@ -743,7 +675,7 @@
       box-shadow: 0 0px 1px rgba(30, 15, 0, 0.15);
     }
 
-    /* Share link toast */
+    /* Share toast */
     #share-toast {
       position: fixed;
       bottom: 80px;
@@ -814,36 +746,25 @@
       <div id="puck"><img src="/Torque-logo-cream.png" alt=""></div>
     </div>
 
-    <!-- Share button is a sibling of #compass, not inside it — keeps it out of the drag event target -->
+    <!-- Share button outside compass drag zone -->
     <button id="share-btn" aria-label="Share your vibe">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 2L11 13" />
         <path d="M22 2L15 22L11 13L2 9L22 2Z" />
       </svg>
+      <span class="share-label">Share</span>
     </button>
   </div>
 
-  <div id="results">
-    <div id="hint">
-      <p class="hint-text">Drag the puck toward your vibe<br>or tap a feeling to jump there</p>
-    </div>
-    <div id="postcards" class="hidden"></div>
-  </div>
+  <!-- Instruction text — permanent chassis label, always visible -->
+  <p id="instruction">Drag the puck toward your vibe — or tap a feeling to jump there</p>
 
-  <div id="controls">
-    <div id="prep-filter">
-      <button class="prep-btn active" data-prep="all" onclick="setPrepFilter('all')">All</button>
-      <button class="prep-btn" data-prep="espresso" onclick="setPrepFilter('espresso')">Espresso</button>
-      <button class="prep-btn" data-prep="filter" onclick="setPrepFilter('filter')">Filter</button>
-    </div>
-    <label class="toggle-wrap">
-      <input type="checkbox" id="decaf-toggle" class="toggle" onchange="onDecafChange()">
-      <span>Decaf only</span>
-    </label>
+  <div id="results">
+    <div id="postcards" class="hidden"></div>
   </div>
 </div>
 
-<!-- Lightbox — Change 6: new content order -->
+<!-- Lightbox -->
 <div id="lightbox" class="hidden">
   <div id="lightbox-overlay" onclick="closeLightbox()"></div>
   <div id="lightbox-content">
@@ -862,11 +783,12 @@
 <script>
   const MAX_DIST = Math.sqrt(200 * 200 + 200 * 200)
 
-  const ACCENT = {
-    tr: '#c8a96e',
-    tl: '#6eb8b8',
-    bl: '#b8956e',
-    br: '#9a6eb8',
+  // Card left-border accent per quadrant
+  const CARD_ACCENT = {
+    tl: 'rgba(229, 136, 37, 0.6)',
+    tr: 'rgba(221, 74, 19, 0.6)',
+    bl: 'rgba(110, 69, 35, 0.7)',
+    br: 'rgba(140, 82, 255, 0.6)',
   }
 
   let coffees = []
@@ -878,25 +800,23 @@
   let hasInteracted = false
   let puckHasMoved = false
   let rafId = null
-  let prepFilter = 'all'
   let immediateQuadrant = false
+  let shouldPulse = false
 
-  const appEl        = document.getElementById('app')
-  const compassEl    = document.getElementById('compass')
-  const puckEl       = document.getElementById('puck')
-  const hintEl       = document.getElementById('hint')
-  const postcardsEl  = document.getElementById('postcards')
-  const loadingEl    = document.getElementById('loading')
-  const decafToggle  = document.getElementById('decaf-toggle')
-  const lightboxEl   = document.getElementById('lightbox')
-  const lbMatchEl    = document.getElementById('lightbox-match')
-  const lbImgEl      = document.getElementById('lightbox-img')
-  const lbBtnEl      = document.getElementById('lightbox-btn')
-  const lbRoastWrap  = document.getElementById('lb-roast-wrap')
-  const lbUspEl      = document.getElementById('lb-usp')
-  const lbSubEl      = document.getElementById('lb-sub')
-  const shareBtn     = document.getElementById('share-btn')
-  const shareToast   = document.getElementById('share-toast')
+  const appEl       = document.getElementById('app')
+  const compassEl   = document.getElementById('compass')
+  const puckEl      = document.getElementById('puck')
+  const postcardsEl = document.getElementById('postcards')
+  const loadingEl   = document.getElementById('loading')
+  const lightboxEl  = document.getElementById('lightbox')
+  const lbMatchEl   = document.getElementById('lightbox-match')
+  const lbImgEl     = document.getElementById('lightbox-img')
+  const lbBtnEl     = document.getElementById('lightbox-btn')
+  const lbRoastWrap = document.getElementById('lb-roast-wrap')
+  const lbUspEl     = document.getElementById('lb-usp')
+  const lbSubEl     = document.getElementById('lb-sub')
+  const shareBtn    = document.getElementById('share-btn')
+  const shareToast  = document.getElementById('share-toast')
 
   const quadrantEls = {
     tl: document.querySelector('.compass-quadrants .q-tl'),
@@ -912,7 +832,7 @@
       el.classList.toggle('active', key === q)
     })
     if (immediate) {
-      quadrantEls.tl.offsetHeight // force reflow before restoring transitions
+      quadrantEls.tl.offsetHeight
       ;['tl', 'tr', 'bl', 'br'].forEach(key => { quadrantEls[key].style.transition = '' })
     }
   }
@@ -926,7 +846,7 @@
       coffees = await res.json()
       loadingEl.classList.add('hidden')
 
-      // Restore localStorage state silently
+      // Restore localStorage position
       const savedPos = localStorage.getItem('torque_puck_position')
       if (savedPos) {
         try {
@@ -935,23 +855,12 @@
           puckY = typeof pos.y === 'number' ? pos.y : 0
           hasInteracted = true
           immediateQuadrant = true
-          hintEl.style.display = 'none'
+          shouldPulse = true
           postcardsEl.classList.remove('hidden')
         } catch(e) {}
       }
 
-      const savedDecaf = localStorage.getItem('torque_decaf')
-      if (savedDecaf !== null) decafToggle.checked = savedDecaf === 'true'
-
-      const savedPrep = localStorage.getItem('torque_prep')
-      if (savedPrep) {
-        prepFilter = savedPrep
-        document.querySelectorAll('.prep-btn').forEach(b => {
-          b.classList.toggle('active', b.dataset.prep === prepFilter)
-        })
-      }
-
-      // URL params override localStorage — Change 7
+      // URL params override localStorage
       checkUrlParams()
 
       renderPuck()
@@ -961,7 +870,7 @@
     }
   }
 
-  // ── URL parameter handling — Change 7 ─────────────────────────────────────
+  // ── URL parameter handling ────────────────────────────────────────────────
 
   function checkUrlParams() {
     const params = new URLSearchParams(window.location.search)
@@ -976,7 +885,7 @@
     hasInteracted = true
     puckHasMoved = true
     immediateQuadrant = true
-    hintEl.style.display = 'none'
+    shouldPulse = true
     postcardsEl.classList.remove('hidden')
     document.body.classList.add('puck-moved')
   }
@@ -1000,29 +909,18 @@
     updateQuadrantColors(q, immediateQuadrant)
     immediateQuadrant = false
 
+    // Update card accent border color for active quadrant
+    document.documentElement.style.setProperty('--card-accent', CARD_ACCENT[q])
+
     document.querySelectorAll('.fp').forEach(el => el.classList.remove('active'))
     document.querySelector(`.fp.${q}`).classList.add('active')
   }
 
   // ── Matching engine ───────────────────────────────────────────────────────
 
-  function matchesPrep(c) {
-    if (prepFilter === 'all') return true
-    if (!c.preparations) return true
-    const preps = c.preparations.toLowerCase()
-    if (prepFilter === 'espresso') return preps.includes('espresso') || preps.includes('omni')
-    if (prepFilter === 'filter') return preps.includes('filter') || preps.includes('omni')
-    return true
-  }
-
   function findMatches() {
-    const decafOnly = decafToggle.checked
-    const pool = coffees.filter(c => {
-      const isDecaf = c.name.toLowerCase().includes('decaf')
-      return (decafOnly ? isDecaf : !isDecaf) && matchesPrep(c)
-    })
-
-    return pool
+    // All coffees in pool — no prep or decaf filter
+    return coffees
       .map(c => {
         const dist = Math.sqrt((puckX - c.quadrant_x) ** 2 + (puckY - c.quadrant_y) ** 2)
         const match = Math.round(100 - (dist / MAX_DIST * 100))
@@ -1039,18 +937,16 @@
     if (!hasInteracted) return
 
     currentMatches = findMatches()
-    const q = getQuadrant(puckX, puckY)
-    const accent = ACCENT[q]
 
     if (!currentMatches.length) {
       lastMatchHandles = ''
-      postcardsEl.innerHTML = `<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:24px 0;"><p style="font-size:13px;color:var(--text-muted);text-align:center;font-style:italic;">No coffees match these filters right now.<br>Try adjusting your filters.</p></div>`
+      postcardsEl.innerHTML = `<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:24px 0;"><p style="font-size:13px;color:var(--text-muted);text-align:center;font-style:italic;">No coffees available right now.</p></div>`
       return
     }
 
     const handles = currentMatches.map(c => c.handle).join(',')
 
-    // Same coffees: only update match % in place to avoid re-triggering card animation
+    // Same coffees: only update match % in place, no re-render
     if (handles === lastMatchHandles) {
       currentMatches.forEach((c, idx) => {
         const el = postcardsEl.querySelectorAll('.postcard-match')[idx]
@@ -1065,24 +961,37 @@
       const notes = c.tasting_notes
         ? c.tasting_notes.split(',').map(n => n.trim()).join(' · ')
         : ''
-      const imgSrc = c.postcard_image || c.image_url
+      // Cards use product box photo (image_url = images[0]), lightbox uses postcard
+      const imgSrc = c.image_url
       const imgInner = imgSrc
         ? `<img class="postcard-img" src="${imgSrc}" alt="" loading="lazy">`
         : `<div class="postcard-img-placeholder"></div>`
-      // Match % overlays the image as a warm readout — CSS handles color/glow
-      const img = `<div class="postcard-img-wrap">${imgInner}<div class="postcard-match">${c.match}% match</div></div>`
 
       return `
         <div class="postcard" onclick="openLightbox(${idx})">
-          ${img}
+          <div class="postcard-img-wrap">
+            ${imgInner}
+            <div class="postcard-match">${c.match}% match</div>
+          </div>
           <div class="postcard-body">
             <div class="postcard-name">${c.name}</div>
             ${notes ? `<div class="postcard-notes">${notes}</div>` : ''}
-            <a class="postcard-btn" href="${c.product_url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Get This Coffee →</a>
+            <button class="postcard-btn" onclick="event.stopPropagation(); openLightbox(${idx})">Get This Coffee →</button>
           </div>
         </div>
       `
     }).join('')
+
+    // Pulse once if flagged (drag just ended, snap, or URL load)
+    if (shouldPulse) {
+      shouldPulse = false
+      requestAnimationFrame(() => {
+        postcardsEl.querySelectorAll('.postcard').forEach(el => {
+          el.classList.add('pulse')
+          el.addEventListener('animationend', () => el.classList.remove('pulse'), { once: true })
+        })
+      })
+    }
   }
 
   function scheduleRender() {
@@ -1095,29 +1004,13 @@
     })
   }
 
-  // ── localStorage ──────────────────────────────────────────────────────────
+  // ── Persistence ───────────────────────────────────────────────────────────
 
   function savePuckPosition() {
     localStorage.setItem('torque_puck_position', JSON.stringify({ x: puckX, y: puckY }))
   }
 
-  function onDecafChange() {
-    localStorage.setItem('torque_decaf', decafToggle.checked)
-    lastMatchHandles = ''
-    renderMatches()
-  }
-
-  function setPrepFilter(val) {
-    prepFilter = val
-    localStorage.setItem('torque_prep', val)
-    document.querySelectorAll('.prep-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.prep === val)
-    })
-    lastMatchHandles = ''
-    renderMatches()
-  }
-
-  // ── Roast gauge helpers — Change 5 ───────────────────────────────────────
+  // ── Roast gauge helpers ───────────────────────────────────────────────────
 
   function getRoastPosition(raw) {
     if (!raw) return null
@@ -1130,8 +1023,6 @@
     return raw.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
   }
 
-  // ── Lightbox — Changes 5 & 6 ─────────────────────────────────────────────
-
   function parseSubType(raw) {
     if (!raw) return null
     if (Array.isArray(raw)) return raw[0] || null
@@ -1140,6 +1031,8 @@
     }
     return raw
   }
+
+  // ── Lightbox ──────────────────────────────────────────────────────────────
 
   function openLightbox(idx) {
     const c = currentMatches[idx]
@@ -1173,7 +1066,7 @@
       lbUspEl.style.display = 'none'
     }
 
-    // Subscription type — parse from possible JSON array
+    // Subscription
     const subType = parseSubType(c.sub_type)
     if (subType) {
       lbSubEl.textContent = `Ships in the ${subType} subscription`
@@ -1190,12 +1083,10 @@
     lbImgEl.src = ''
   }
 
-  // Close on Escape
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeLightbox()
   })
 
-  // Swipe down to close lightbox
   let lbTouchStartY = 0
   lightboxEl.addEventListener('touchstart', e => {
     lbTouchStartY = e.touches[0].clientY
@@ -1211,6 +1102,7 @@
     puckEl.classList.remove('dragging')
     puckX = x
     puckY = y
+    shouldPulse = true
     markPuckMoved()
     activate()
     scheduleRender()
@@ -1220,7 +1112,6 @@
   function activate() {
     if (hasInteracted) return
     hasInteracted = true
-    hintEl.style.display = 'none'
     postcardsEl.classList.remove('hidden')
   }
 
@@ -1284,13 +1175,18 @@
     if (!isDragging) return
     isDragging = false
     puckEl.classList.remove('dragging')
+    // Pulse once when drag settles on new results
+    if (hasInteracted) {
+      shouldPulse = true
+      scheduleRender()
+    }
   }
 
   document.addEventListener('mouseup', endDrag)
   document.addEventListener('touchend', endDrag)
   document.addEventListener('touchcancel', endDrag)
 
-  // ── Share vibe — Change 7 ─────────────────────────────────────────────────
+  // ── Share vibe ────────────────────────────────────────────────────────────
 
   function buildShareUrl() {
     const base = window.location.origin + window.location.pathname
@@ -1310,21 +1206,14 @@
 
   shareBtn.addEventListener('click', async () => {
     if (!puckHasMoved) return
-
     shareBtn.classList.remove('pulsing')
-    // Force reflow so animation replays if clicked rapidly
     void shareBtn.offsetWidth
     shareBtn.classList.add('pulsing')
     shareBtn.addEventListener('animationend', () => shareBtn.classList.remove('pulsing'), { once: true })
-
     const url = buildShareUrl()
-
     if (navigator.share) {
       try {
-        await navigator.share({
-          text: "I found my coffee vibe on the Torque compass — try yours",
-          url
-        })
+        await navigator.share({ text: "I found my coffee vibe on the Torque compass — try yours", url })
       } catch(e) {
         if (e.name !== 'AbortError') copyShareUrl(url)
       }
