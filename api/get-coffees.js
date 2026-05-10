@@ -86,15 +86,41 @@ module.exports = async function handler(req, res) {
 
         const productImage = product.images && product.images[0] ? product.images[0].src : null;
 
-        // RAW VALUE LOG (first product only): console.log('postcard_image raw:', JSON.stringify(meta['custom.torque_postcard_image'] || meta['torque_postcard_image']))
-        // Shopify file metafields return a JSON string: "{\"image\":{\"url\":\"https://...\"}}"
-        // or a plain URL string, or null. Extract the URL from whichever shape we get.
+        // Resolve postcard metafield — three possible formats from Shopify:
+        //   1. Direct URL string "https://cdn.shopify.com/..."
+        //   2. GID reference "gid://shopify/MediaImage/123..." → resolve via GraphQL
+        //   3. JSON string '{"image":{"url":"https://..."}}' (legacy format)
         const rawPostcard = meta['custom.torque_postcard_image'] || meta['torque_postcard_image'] || null;
+        // Diagnostic: log first product's raw value in Vercel function logs
+        if (product === torqueProducts[0]) {
+          console.log('[postcard debug]', product.handle, JSON.stringify(rawPostcard));
+        }
         let postcardUrl = productImage;
         if (rawPostcard) {
           if (typeof rawPostcard === 'string' && rawPostcard.startsWith('http')) {
+            // Format 1: direct URL
             postcardUrl = rawPostcard;
+          } else if (typeof rawPostcard === 'string' && rawPostcard.startsWith('gid://shopify/')) {
+            // Format 2: Shopify GID — resolve to CDN URL via GraphQL
+            try {
+              const gqlRes = await fetch(
+                `https://${SHOPIFY_STORE_HANDLE}.myshopify.com/admin/api/2025-01/graphql.json`,
+                {
+                  method: 'POST',
+                  headers: { ...shopHeaders, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    query: `{ node(id: "${rawPostcard}") { ... on MediaImage { image { url } } } }`
+                  })
+                }
+              );
+              if (gqlRes.ok) {
+                const gqlData = await gqlRes.json();
+                const resolved = gqlData?.data?.node?.image?.url;
+                if (resolved) postcardUrl = resolved;
+              }
+            } catch(e) { /* falls back to productImage */ }
           } else {
+            // Format 3: JSON string (legacy)
             try {
               const parsed = JSON.parse(rawPostcard);
               postcardUrl = (parsed && (parsed.url || (parsed.image && parsed.image.url))) || productImage;
