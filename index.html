@@ -267,10 +267,10 @@
       cursor: pointer;
       z-index: 3;
     }
-    .fp.tr { top: 0; right: 0; }
-    .fp.tl { top: 0; left: 0; }
-    .fp.bl { bottom: 0; left: 0; }
-    .fp.br { bottom: 0; right: 0; }
+    .fp.tl { left: 33%; top: 33%; transform: translate(-50%, -50%); }
+    .fp.tr { left: 67%; top: 33%; transform: translate(-50%, -50%); }
+    .fp.bl { left: 33%; top: 67%; transform: translate(-50%, -50%); }
+    .fp.br { left: 67%; top: 67%; transform: translate(-50%, -50%); }
 
     .fp-label {
       font-family: 'DM Sans', sans-serif;
@@ -518,11 +518,10 @@
       line-height: 1.2;
       margin-top: 2px;
       display: -webkit-box;
-      -webkit-line-clamp: 1;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     /* Card button — opens lightbox */
