@@ -448,25 +448,25 @@
       flex-shrink: 0;
       padding: 8px 8px 0;
       line-height: 0;
-      max-height: 160px;
+      max-height: 120px;
       overflow: hidden;
-      border-radius: 24px;
+      border-radius: 20px;
     }
     .postcard-img {
       display: block;
       width: 100%;
       aspect-ratio: 1 / 1;
-      max-height: 160px;
+      max-height: 120px;
       object-fit: cover;
       object-position: center;
-      border-radius: 24px;
+      border-radius: 20px;
       background: rgba(255,255,255,0.04);
     }
     .postcard-img-placeholder {
       width: 100%;
       aspect-ratio: 1 / 1;
-      max-height: 160px;
-      border-radius: 24px;
+      max-height: 120px;
+      border-radius: 20px;
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
     }
 
@@ -500,25 +500,37 @@
     }
     .postcard-name {
       font-family: 'DM Sans', sans-serif;
-      font-size: 17px;
-      font-weight: 700;
-      line-height: 1.25;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.2;
       color: rgba(255, 255, 255, 0.95);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .postcard-notes {
       font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 400;
-      color: rgba(255, 255, 255, 0.6);
-      line-height: 1.3;
+      color: rgba(255, 255, 255, 0.55);
+      line-height: 1.2;
       margin-top: 2px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* Card button — opens lightbox */
     .postcard-btn {
       display: block;
       margin-top: 6px;
-      padding: 7px 8px;
+      margin-bottom: 0;
+      padding: 8px 8px;
       background: linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%);
       border: 1px solid rgba(255,255,255,0.18);
       border-radius: 6px;
