@@ -50,12 +50,18 @@
       gap: 16px;
     }
     #loading.hidden { display: none; }
-    .loading-wordmark {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 16px;
-      letter-spacing: 0.35em;
+    .splash-subtitle {
+      font-weight: 600;
+      font-size: 12px;
       text-transform: uppercase;
-      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 12px;
+      animation: subtitleReveal 300ms ease-out 400ms both;
+    }
+    @keyframes subtitleReveal {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
     .loading-dots {
       display: flex;
@@ -98,6 +104,7 @@
     /* Compass section */
     #compass-section {
       flex: 0 0 auto;
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -291,17 +298,17 @@
         box-shadow 150ms ease-out;
     }
 
-    /* Share vibe button — Change 7 */
+    /* Share vibe button — positioned on compass-section (outside drag element) */
     #share-btn {
       position: absolute;
-      bottom: 2px;
-      right: 2px;
+      bottom: 0;
+      right: 16px;
       z-index: 20;
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       border: none;
       background: none;
-      padding: 4px;
+      padding: 0;
       cursor: pointer;
       color: #E58825;
       opacity: 0;
@@ -691,7 +698,7 @@
 <!-- Loading overlay -->
 <div id="loading">
   <img src="/Torque-logo.png" alt="Torque Coffee" style="height:40px;margin-bottom:4px;opacity:0.85;" onerror="this.style.display='none'">
-  <span class="loading-wordmark">Torque Coffee</span>
+  <span class="splash-subtitle">Coffee Vibe Machine</span>
   <div class="loading-dots"><span></span><span></span><span></span></div>
 </div>
 
@@ -726,18 +733,15 @@
       <span class="axis-arrow arrow-left"></span>
       <span class="axis-arrow arrow-right"></span>
       <div id="puck"><img src="/Torque-logo-cream.png" alt=""></div>
-
-      <!-- Share vibe icon — Change 7 -->
-      <button id="share-btn" aria-label="Share your vibe">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="6" cy="16" r="2.5"/>
-          <circle cx="16" cy="16" r="2.5"/>
-          <path d="M6 13.5 C6 8 11 5.5 11 5.5"/>
-          <path d="M16 13.5 C16 8 11 5.5 11 5.5"/>
-          <circle cx="11" cy="4.5" r="1.8" fill="currentColor" stroke="none"/>
-        </svg>
-      </button>
     </div>
+
+    <!-- Share button is a sibling of #compass, not inside it — keeps it out of the drag event target -->
+    <button id="share-btn" aria-label="Share your vibe">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 2L11 13" />
+        <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+      </svg>
+    </button>
   </div>
 
   <div id="results">
