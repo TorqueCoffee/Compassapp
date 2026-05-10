@@ -2,6 +2,7 @@
 
 This file gives Claude Code persistent context for all Torque Coffee internal web projects. Read this before writing any code, SQL, or deployment instructions.
 
+For all visual design, CSS, and animation work, read compass-analog-design-SKILL.md before writing code.
 ---
 
 ## Stack

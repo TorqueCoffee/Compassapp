@@ -17,7 +17,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #1a1a1a;
+      --bg: #0D0D0D;
       --text: #FFFEF0;
       --text-muted: rgba(240, 236, 228, 0.4);
       --axis-line: rgba(240, 236, 228, 0.1);
@@ -25,6 +25,16 @@
       --card-border: rgba(240, 236, 228, 0.08);
       --accent: #c8a96e;
       --puck: #E58825;
+
+      --q-tl-muted: rgba(224, 136, 32, 0.25);
+      --q-tr-muted: rgba(216, 72, 16, 0.25);
+      --q-bl-muted: rgba(104, 64, 32, 0.25);
+      --q-br-muted: rgba(136, 80, 248, 0.25);
+
+      --q-tl-active: rgba(224, 136, 32, 0.55);
+      --q-tr-active: rgba(216, 72, 16, 0.55);
+      --q-bl-active: rgba(104, 64, 32, 0.55);
+      --q-br-active: rgba(136, 80, 248, 0.55);
     }
 
     html, body {
@@ -93,7 +103,6 @@
       height: 100%;
       display: flex;
       flex-direction: column;
-      transition: background 500ms ease;
     }
 
     /* Header */
@@ -123,23 +132,51 @@
       overflow: visible;
     }
 
-    /* Crosshair axis lines */
+    /* Crosshair axis lines — machine dividers, embedded between quadrant panels */
     #compass::before, #compass::after {
       content: '';
       position: absolute;
       background: var(--axis-line);
       pointer-events: none;
+      z-index: 2;
     }
     #compass::before { /* horizontal */
       width: 100%; height: 2px;
       top: 50%; left: 0;
       transform: translateY(-50%);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 -1px 0 rgba(255, 255, 255, 0.05);
     }
     #compass::after { /* vertical */
       width: 2px; height: 100%;
       left: 50%; top: 0;
       transform: translateX(-50%);
+      box-shadow: 1px 0 2px rgba(0, 0, 0, 0.3), -1px 0 0 rgba(255, 255, 255, 0.05);
     }
+
+    /* Quadrant color panels — clipped to compass circle, behind all other layers */
+    .compass-quadrants {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .quadrant {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      transition: background-color 300ms ease-out;
+    }
+    .quadrant.active { transition: background-color 250ms ease-out; }
+    .quadrant.q-tl { top: 0; left: 0; background-color: var(--q-tl-muted); }
+    .quadrant.q-tr { top: 0; right: 0; background-color: var(--q-tr-muted); }
+    .quadrant.q-bl { bottom: 0; left: 0; background-color: var(--q-bl-muted); }
+    .quadrant.q-br { bottom: 0; right: 0; background-color: var(--q-br-muted); }
+    .quadrant.q-tl.active { background-color: var(--q-tl-active); }
+    .quadrant.q-tr.active { background-color: var(--q-tr-active); }
+    .quadrant.q-bl.active { background-color: var(--q-bl-active); }
+    .quadrant.q-br.active { background-color: var(--q-br-active); }
 
     /* Circle ring around compass */
     .compass-ring {
@@ -174,30 +211,30 @@
     .arrow-top {
       top: 2px; left: 50%;
       transform: translateX(-50%);
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-bottom: 6px solid rgba(240,236,228,0.25);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 7px solid rgba(240,236,228,0.2);
     }
     .arrow-bottom {
       bottom: 2px; left: 50%;
       transform: translateX(-50%);
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 6px solid rgba(240,236,228,0.25);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 7px solid rgba(240,236,228,0.2);
     }
     .arrow-left {
       left: 2px; top: 50%;
       transform: translateY(-50%);
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-right: 6px solid rgba(240,236,228,0.25);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 7px solid rgba(240,236,228,0.2);
     }
     .arrow-right {
       right: 2px; top: 50%;
       transform: translateY(-50%);
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-left: 6px solid rgba(240,236,228,0.25);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 7px solid rgba(240,236,228,0.2);
     }
 
     /* Axis labels — primary navigation cues, clearly legible */
@@ -708,6 +745,12 @@
 
   <div id="compass-section">
     <div id="compass">
+      <div class="compass-quadrants">
+        <div class="quadrant q-tl"></div>
+        <div class="quadrant q-tr"></div>
+        <div class="quadrant q-bl"></div>
+        <div class="quadrant q-br"></div>
+      </div>
       <span class="axis-label axis-top">Lively</span>
       <span class="axis-label axis-bottom">Syrupy</span>
       <span class="axis-label axis-left">Classic</span>
@@ -783,13 +826,6 @@
 <script>
   const MAX_DIST = Math.sqrt(200 * 200 + 200 * 200)
 
-  const BG = {
-    tr: '#78051E',
-    tl: '#785F05',
-    bl: '#05785F',
-    br: '#051E78',
-  }
-
   const ACCENT = {
     tr: '#c8a96e',
     tl: '#6eb8b8',
@@ -807,6 +843,7 @@
   let puckHasMoved = false
   let rafId = null
   let prepFilter = 'all'
+  let immediateQuadrant = false
 
   const appEl        = document.getElementById('app')
   const compassEl    = document.getElementById('compass')
@@ -825,6 +862,25 @@
   const shareBtn     = document.getElementById('share-btn')
   const shareToast   = document.getElementById('share-toast')
 
+  const quadrantEls = {
+    tl: document.querySelector('.compass-quadrants .q-tl'),
+    tr: document.querySelector('.compass-quadrants .q-tr'),
+    bl: document.querySelector('.compass-quadrants .q-bl'),
+    br: document.querySelector('.compass-quadrants .q-br'),
+  }
+
+  function updateQuadrantColors(q, immediate) {
+    ;['tl', 'tr', 'bl', 'br'].forEach(key => {
+      const el = quadrantEls[key]
+      if (immediate) el.style.transition = 'none'
+      el.classList.toggle('active', key === q)
+    })
+    if (immediate) {
+      quadrantEls.tl.offsetHeight // force reflow before restoring transitions
+      ;['tl', 'tr', 'bl', 'br'].forEach(key => { quadrantEls[key].style.transition = '' })
+    }
+  }
+
   // ── Data loading ──────────────────────────────────────────────────────────
 
   async function loadCoffees() {
@@ -842,6 +898,7 @@
           puckX = typeof pos.x === 'number' ? pos.x : 0
           puckY = typeof pos.y === 'number' ? pos.y : 0
           hasInteracted = true
+          immediateQuadrant = true
           hintEl.style.display = 'none'
           postcardsEl.classList.remove('hidden')
         } catch(e) {}
@@ -882,6 +939,7 @@
     puckY = Math.max(-100, Math.min(100, y))
     hasInteracted = true
     puckHasMoved = true
+    immediateQuadrant = true
     hintEl.style.display = 'none'
     postcardsEl.classList.remove('hidden')
     document.body.classList.add('puck-moved')
@@ -903,7 +961,8 @@
     if (!hasInteracted) return
 
     const q = getQuadrant(puckX, puckY)
-    appEl.style.background = BG[q]
+    updateQuadrantColors(q, immediateQuadrant)
+    immediateQuadrant = false
 
     document.querySelectorAll('.fp').forEach(el => el.classList.remove('active'))
     document.querySelector(`.fp.${q}`).classList.add('active')
