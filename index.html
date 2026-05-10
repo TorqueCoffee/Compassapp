@@ -255,7 +255,7 @@
     .axis-left   { left: 10px; top: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg); }
     .axis-right  { right: 10px; top: 50%; transform: translateX(50%) translateY(-50%) rotate(90deg); }
 
-    /* Feeling pair tap targets */
+    /* Feeling pair tap targets — centered in each quadrant */
     .fp {
       position: absolute;
       width: 46%;
@@ -271,19 +271,31 @@
     .fp.bl { bottom: 0; left: 0; }
     .fp.br { bottom: 0; right: 0; }
 
+    /* Badge treatment — engraved label plate */
     .fp-label {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(16px, 2.8vw, 16px);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
       font-weight: 600;
-      color: var(--text);
-      opacity: 0.35;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
       text-align: center;
-      line-height: 1.25;
+      line-height: 1.4;
       pointer-events: none;
-      transition: opacity 250ms ease;
+      padding: 5px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 1px 3px rgba(0, 0, 0, 0.15);
+      transition: color 200ms ease, background 200ms ease, border-color 200ms ease;
     }
-    .fp.active .fp-label,
-    .fp:active .fp-label { opacity: 0.85; }
+    .fp.active .fp-label {
+      color: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
 
     /* Puck — physical depth + grab/release physics */
     #puck {
@@ -423,6 +435,7 @@
     .postcard:nth-child(2) { animation-delay: 40ms; }
 
     .postcard-img-wrap {
+      position: relative;
       flex-shrink: 0;
       margin: 0;
       padding: 0;
@@ -442,16 +455,31 @@
       height: 120px;
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 100%);
     }
+    /* Match % overlays the card image — warm LED readout */
+    .postcard-match {
+      position: absolute;
+      bottom: 7px;
+      left: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      color: #E58825;
+      text-shadow:
+        0 0 8px rgba(229, 136, 37, 0.4),
+        0 0 20px rgba(229, 136, 37, 0.15);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 3px 7px;
+      border-radius: 3px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      line-height: 1;
+    }
     .postcard-body {
       padding: 8px 10px 10px;
       display: flex;
       flex-direction: column;
       gap: 3px;
-    }
-    .postcard-match {
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.06em;
     }
     .postcard-name {
       font-family: 'Cormorant Garamond', serif;
@@ -462,8 +490,8 @@
     }
     .postcard-notes {
       font-size: 10px;
-      font-weight: 300;
-      color: var(--text-muted);
+      font-weight: 400;
+      color: rgba(240, 236, 228, 0.7);
       line-height: 1.4;
     }
 
@@ -507,10 +535,10 @@
     }
     .toggle-wrap span {
       font-size: 10px;
-      font-weight: 300;
+      font-weight: 400;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--text-muted);
+      color: rgba(240, 236, 228, 0.65);
     }
     .toggle {
       position: relative;
@@ -603,11 +631,6 @@
       animation: lbOpen 350ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
     }
 
-    #lightbox-match {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-    }
     #lightbox-img {
       max-width: 90vw;
       max-height: 55vh;
@@ -619,7 +642,7 @@
       display: block;
     }
 
-    /* Roast gauge — Change 5 */
+    /* Roast gauge */
     #lb-roast-wrap {
       width: 100%;
       display: flex;
@@ -630,10 +653,10 @@
     }
     .lb-roast-label {
       font-size: 9px;
-      font-weight: 400;
+      font-weight: 500;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 0.55);
       text-align: center;
     }
     .lb-roast-bar {
@@ -657,32 +680,45 @@
     }
     .lb-roast-value {
       font-size: 10px;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.75);
       text-align: center;
     }
 
-    /* USP line — Change 6 */
+    /* USP line */
     #lb-usp {
       font-family: 'Cormorant Garamond', serif;
       font-style: italic;
+      font-weight: 400;
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.65);
+      color: rgba(255, 255, 255, 0.8);
       text-align: center;
       line-height: 1.4;
       max-width: 280px;
       animation: lbOpen 280ms cubic-bezier(0.34, 1.3, 0.64, 1) 80ms both;
     }
 
-    /* Subscription line — Change 6 */
+    /* Subscription line */
     #lb-sub {
       font-size: 9px;
-      font-weight: 400;
+      font-weight: 500;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.45);
+      color: rgba(255, 255, 255, 0.6);
       text-align: center;
       animation: lbOpen 280ms cubic-bezier(0.34, 1.3, 0.64, 1) 120ms both;
+    }
+
+    /* Lightbox match % — warm readout glow, no backing needed on solid dark bg */
+    #lightbox-match {
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: #E58825;
+      text-shadow:
+        0 0 8px rgba(229, 136, 37, 0.4),
+        0 0 20px rgba(229, 136, 37, 0.15);
     }
 
     /* Lightbox button — button depth */
@@ -1014,11 +1050,11 @@
 
     const handles = currentMatches.map(c => c.handle).join(',')
 
-    // Same coffees: only update match % text in place to avoid re-triggering card animation
+    // Same coffees: only update match % in place to avoid re-triggering card animation
     if (handles === lastMatchHandles) {
       currentMatches.forEach((c, idx) => {
         const el = postcardsEl.querySelectorAll('.postcard-match')[idx]
-        if (el) { el.textContent = `${c.match}% match`; el.style.color = accent }
+        if (el) el.textContent = `${c.match}% match`
       })
       return
     }
@@ -1033,13 +1069,13 @@
       const imgInner = imgSrc
         ? `<img class="postcard-img" src="${imgSrc}" alt="" loading="lazy">`
         : `<div class="postcard-img-placeholder"></div>`
-      const img = `<div class="postcard-img-wrap">${imgInner}</div>`
+      // Match % overlays the image as a warm readout — CSS handles color/glow
+      const img = `<div class="postcard-img-wrap">${imgInner}<div class="postcard-match">${c.match}% match</div></div>`
 
       return `
         <div class="postcard" onclick="openLightbox(${idx})">
           ${img}
           <div class="postcard-body">
-            <div class="postcard-match" style="color:${accent}">${c.match}% match</div>
             <div class="postcard-name">${c.name}</div>
             ${notes ? `<div class="postcard-notes">${notes}</div>` : ''}
             <a class="postcard-btn" href="${c.product_url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Get This Coffee →</a>
@@ -1096,16 +1132,22 @@
 
   // ── Lightbox — Changes 5 & 6 ─────────────────────────────────────────────
 
+  function parseSubType(raw) {
+    if (!raw) return null
+    if (Array.isArray(raw)) return raw[0] || null
+    if (typeof raw === 'string' && raw.trim().startsWith('[')) {
+      try { return JSON.parse(raw)[0] || null } catch(e) {}
+    }
+    return raw
+  }
+
   function openLightbox(idx) {
     const c = currentMatches[idx]
     if (!c) return
-    const q = getQuadrant(puckX, puckY)
-    const accent = ACCENT[q]
     const imgSrc = c.postcard_image || c.image_url || ''
 
     lbImgEl.src = imgSrc
     lbMatchEl.textContent = `${c.match}% match`
-    lbMatchEl.style.color = accent
     lbBtnEl.href = c.product_url
 
     // Roast gauge
@@ -1131,9 +1173,10 @@
       lbUspEl.style.display = 'none'
     }
 
-    // Subscription type
-    if (c.sub_type) {
-      lbSubEl.textContent = `Ships in the ${c.sub_type} subscription`
+    // Subscription type — parse from possible JSON array
+    const subType = parseSubType(c.sub_type)
+    if (subType) {
+      lbSubEl.textContent = `Ships in the ${subType} subscription`
       lbSubEl.style.display = ''
     } else {
       lbSubEl.style.display = 'none'
