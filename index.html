@@ -398,14 +398,51 @@
     /* Instruction text — permanent chassis label below compass */
     #instruction {
       flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       font-size: 12px;
       font-weight: 500;
       letter-spacing: 0.03em;
       color: rgba(255, 255, 255, 0.45);
-      text-align: center;
       white-space: nowrap;
       padding: 8px 24px 10px;
     }
+
+    /* Decaf toggle pill */
+    #decaf-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px 3px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.4);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+      flex-shrink: 0;
+    }
+    #decaf-toggle:active { transform: scale(0.96); }
+    #decaf-toggle.active {
+      border-color: rgba(229, 136, 37, 0.45);
+      background: rgba(229, 136, 37, 0.1);
+      color: #E58825;
+    }
+    .decaf-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.5;
+      transition: opacity 150ms ease;
+    }
+    #decaf-toggle.active .decaf-dot { opacity: 1; }
 
     /* Results section */
     #results {
@@ -785,8 +822,13 @@
     </button>
   </div>
 
-  <!-- Instruction text — permanent chassis label, always visible -->
-  <p id="instruction">Drag the puck or tap a feeling</p>
+  <!-- Instruction text + decaf toggle -->
+  <div id="instruction">
+    <span>Drag the puck or tap a feeling</span>
+    <button id="decaf-toggle" onclick="toggleDecaf()">
+      <span class="decaf-dot"></span>Decaf only
+    </button>
+  </div>
 
   <div id="results">
     <div id="postcards" class="hidden"></div>
@@ -831,6 +873,7 @@
   let rafId = null
   let immediateQuadrant = false
   let shouldPulse = false
+  let decafOnly = false
 
   const appEl       = document.getElementById('app')
   const compassEl   = document.getElementById('compass')
@@ -947,9 +990,16 @@
 
   // ── Matching engine ───────────────────────────────────────────────────────
 
+  function isDecaf(c) {
+    return c.name.toLowerCase().includes('decaf')
+  }
+
   function findMatches() {
-    // All coffees in pool — no prep or decaf filter
-    return coffees
+    const pool = decafOnly
+      ? coffees.filter(isDecaf)
+      : coffees.filter(c => !isDecaf(c))
+
+    return pool
       .map(c => {
         const dist = Math.sqrt((puckX - c.quadrant_x) ** 2 + (puckY - c.quadrant_y) ** 2)
         const match = Math.round(100 - (dist / MAX_DIST * 100))
@@ -960,6 +1010,16 @@
         return new Date(b.created_at) - new Date(a.created_at)
       })
       .slice(0, 2)
+  }
+
+  function toggleDecaf() {
+    decafOnly = !decafOnly
+    document.getElementById('decaf-toggle').classList.toggle('active', decafOnly)
+    if (hasInteracted) {
+      lastMatchHandles = ''   // force full re-render
+      shouldPulse = true
+      renderMatches()
+    }
   }
 
   function renderMatches() {
