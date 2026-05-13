@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#E58825">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -110,8 +110,27 @@
       overflow: hidden;
     }
 
-    /* Header */
-    header { flex: 0 0 8px; }
+    /* Header — spacer only on mobile; text revealed at 768px via media query */
+    header {
+      flex: 0 0 8px;
+      overflow: hidden;   /* clips the text node on mobile */
+    }
+
+    /* App body — direct child of #app, holds compass-col + results */
+    .app-body {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;  /* stacked on mobile */
+      overflow: hidden;
+    }
+
+    /* Compass column — transparent passthrough on mobile */
+    .compass-col {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
 
     /* Compass section */
     #compass-section {
@@ -762,6 +781,94 @@
     }
     #share-toast.show { opacity: 1; }
     #share-toast.hide { opacity: 0; transition: opacity 500ms ease-out; }
+
+    /* ── Tablet layout: compass left, results right ───────────────────────── */
+    @media (min-width: 768px) {
+      /* Header: reveal text */
+      header {
+        flex: 0 0 auto;
+        overflow: visible;
+        padding: 12px 0 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(255, 255, 255, 0.35);
+        text-align: center;
+      }
+
+      /* App body: switch to row */
+      .app-body {
+        flex-direction: row;
+        align-items: stretch;
+      }
+
+      /* Compass column: fixed-width left panel */
+      .compass-col {
+        flex: 0 0 clamp(320px, 45vw, 480px);
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px 16px;
+        border-right: 1px solid rgba(240, 236, 228, 0.06);
+      }
+
+      /* Compass section: drop mobile max-height + padding */
+      #compass-section {
+        max-height: none;
+        padding: 0;
+        width: 100%;
+      }
+
+      /* Compass: size relative to column width */
+      #compass {
+        width: min(calc(100% - 32px), 420px);
+      }
+
+      #instruction {
+        padding: 8px 0 10px;
+      }
+
+      /* Results: scrollable right column */
+      #results {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 16px 20px;
+      }
+
+      #postcards {
+        align-content: start;
+        gap: 12px;
+      }
+
+      .postcard-img-wrap,
+      .postcard-img,
+      .postcard-img-placeholder {
+        max-height: 160px;
+      }
+    }
+
+    /* ── Wide desktop ─────────────────────────────────────────────────────── */
+    @media (min-width: 1200px) {
+      .compass-col {
+        flex: 0 0 480px;
+        padding: 0 24px 24px;
+      }
+
+      #compass {
+        width: 420px;
+      }
+
+      #results {
+        padding: 20px 32px;
+      }
+
+      .postcard-name   { font-size: 15px; }
+      .postcard-notes  { font-size: 12px; }
+      .postcard-btn    { font-size: 12px; padding: 9px 10px; }
+    }
   </style>
 </head>
 <body>
@@ -775,8 +882,10 @@
 
 <!-- App -->
 <div id="app">
-  <header></header>
+  <header>Coffee Vibe Machine</header>
 
+  <div class="app-body">
+  <div class="compass-col">
   <div id="compass-section">
     <div id="compass">
       <div class="compass-quadrants">
@@ -829,10 +938,12 @@
       <span class="decaf-dot"></span>Decaf only
     </button>
   </div>
+  </div><!-- /.compass-col -->
 
   <div id="results">
     <div id="postcards" class="hidden"></div>
   </div>
+  </div><!-- /.app-body -->
 </div>
 
 <!-- Lightbox -->
@@ -1065,7 +1176,7 @@
             <div class="postcard-match">${c.match}% match</div>
             <div class="postcard-name">${c.name}</div>
             ${notes ? `<div class="postcard-notes">${notes}</div>` : ''}
-            <button class="postcard-btn" onclick="event.stopPropagation(); openLightbox(${idx})">Get This Coffee →</button>
+            <button class="postcard-btn" onclick="event.stopPropagation(); openLightbox(${idx})">Meet This Coffee →</button>
           </div>
         </div>
       `
