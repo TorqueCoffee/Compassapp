@@ -13,6 +13,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-12G71SVD3F"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-12G71SVD3F');
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -986,6 +994,16 @@
   let shouldPulse = false
   let decafOnly = false
 
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  function track(eventName, params) {
+    if (typeof window.gtag === 'function') window.gtag('event', eventName, params || {})
+  }
+  const QUADRANT_LABELS = { tl: 'Crisp & Clean', tr: 'Bright & Fruity', bl: 'Friendly & Round', br: 'Deep & Complex' }
+  function currentQuadrantLabel() {
+    const q = puckX >= 0 && puckY >= 0 ? 'tr' : puckX < 0 && puckY >= 0 ? 'tl' : puckX < 0 ? 'bl' : 'br'
+    return QUADRANT_LABELS[q]
+  }
+
   const appEl       = document.getElementById('app')
   const compassEl   = document.getElementById('compass')
   const puckEl      = document.getElementById('puck')
@@ -1126,6 +1144,7 @@
   function toggleDecaf() {
     decafOnly = !decafOnly
     document.getElementById('decaf-toggle').classList.toggle('active', decafOnly)
+    track('filter_changed', { filter: decafOnly ? 'decaf' : 'all', has_interacted: hasInteracted })
     if (hasInteracted) {
       lastMatchHandles = ''   // force full re-render
       shouldPulse = true
@@ -1237,6 +1256,13 @@
   function openLightbox(idx) {
     const c = currentMatches[idx]
     if (!c) return
+    track('coffee_card_clicked', {
+      coffee_name: c.name,
+      coffee_handle: c.handle,
+      match_pct: c.match,
+      quadrant: currentQuadrantLabel(),
+      decaf_only: decafOnly
+    })
     const imgSrc = c.postcard_image || c.image_url || ''
 
     lbImgEl.src = imgSrc
@@ -1306,6 +1332,11 @@
     markPuckMoved()
     activate()
     scheduleRender()
+    track('flavor_profile_tapped', {
+      quadrant: QUADRANT_LABELS[x >= 0 && y >= 0 ? 'tr' : x < 0 && y >= 0 ? 'tl' : x < 0 ? 'bl' : 'br'],
+      top_coffee: currentMatches.length ? currentMatches[0].name : '',
+      decaf_only: decafOnly
+    })
     setTimeout(() => puckEl.classList.remove('snapping'), 350)
   }
 
@@ -1313,6 +1344,7 @@
     if (hasInteracted) return
     hasInteracted = true
     postcardsEl.classList.remove('hidden')
+    track('vibe_session_started', { decaf_only: decafOnly })
   }
 
   function markPuckMoved() {
@@ -1382,10 +1414,16 @@
     if (!isDragging) return
     isDragging = false
     puckEl.classList.remove('dragging')
-    // Pulse once when drag settles on new results
     if (hasInteracted) {
       shouldPulse = true
       scheduleRender()
+      track('puck_dropped', {
+        quadrant: currentQuadrantLabel(),
+        puck_x: puckX,
+        puck_y: puckY,
+        top_coffee: currentMatches.length ? currentMatches[0].name : '',
+        decaf_only: decafOnly
+      })
     }
   }
 
@@ -1413,6 +1451,11 @@
 
   shareBtn.addEventListener('click', async () => {
     if (!puckHasMoved) return
+    track('vibe_shared', {
+      quadrant: currentQuadrantLabel(),
+      top_coffee: currentMatches.length ? currentMatches[0].name : '',
+      method: navigator.share ? 'native' : 'clipboard'
+    })
     shareBtn.classList.remove('pulsing')
     void shareBtn.offsetWidth
     shareBtn.classList.add('pulsing')
